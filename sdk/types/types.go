@@ -31,6 +31,14 @@ type ThrottleRateReturn struct {
     EndTime      time.Time // End of the query interval (UTC)	
 }
 
+type TimeoutRateReturn struct {
+	TimeoutRate float64
+	FunctionName string
+	Qualifier string
+    StartTime    time.Time // Start of the query interval (UTC)
+    EndTime      time.Time // End of the query interval (UTC)	
+}
+
 type ConfigOptions struct {
 	Region          string
 	Profile         string
