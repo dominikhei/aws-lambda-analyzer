@@ -30,3 +30,10 @@ type ThrottleRateReturn struct {
     StartTime    time.Time // Start of the query interval (UTC)
     EndTime      time.Time // End of the query interval (UTC)	
 }
+
+type ConfigOptions struct {
+	Region          string
+	Profile         string
+	AccessKeyID     string
+	SecretAccessKey string
+}

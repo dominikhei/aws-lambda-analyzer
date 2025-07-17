@@ -9,15 +9,14 @@ import (
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/clientmanager"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/metrics"
 	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
-	"github.com/aws/aws-sdk-go-v2/config"
 )
 
 type Analyzer struct {
     cloudwatchfetcher *cloudwatchfetcher.Fetcher
 }
 
-func New(ctx context.Context, opts ...func(*config.LoadOptions) error) *Analyzer {
-    clients, err := clientmanager.NewAWSClients(ctx, opts...)
+func New(ctx context.Context, opts sdktypes.ConfigOptions) *Analyzer {
+    clients, err := clientmanager.NewAWSClients(ctx, opts)
     if err != nil {
         log.Fatalf("failed to initialize AWS clients: %v", err)
     }

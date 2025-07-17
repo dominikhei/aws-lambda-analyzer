@@ -11,19 +11,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
     "github.com/aws/aws-sdk-go-v2/service/xray"
 	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/utils"
 )
 
-// NewAWSClients creates and returns AWS service clients required for the analyzer.
-// 
-// By default, it loads configuration using the AWS SDK's standard credential and
-// configuration chain (environment variables, shared config files, EC2 instance roles, etc.).
-//
-// You can override the defaults by providing custom LoadOptions via the opts parameter,
-// such as specifying a region, credentials provider, or profile.
-//
-// Returns an AWSClients struct containing initialized clients or an error if config loading fails.
-func NewAWSClients(ctx context.Context, opts ...func(*config.LoadOptions) error) (*sdktypes.AWSClients, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, opts...)
+// Example usage inside NewAWSClients:
+func NewAWSClients(ctx context.Context, opts sdktypes.ConfigOptions) (*sdktypes.AWSClients, error) {
+	loadOpts, err := utils.ToLoadOptions(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg, err := config.LoadDefaultConfig(ctx, loadOpts...)
 	if err != nil {
 		return nil, err
 	}
