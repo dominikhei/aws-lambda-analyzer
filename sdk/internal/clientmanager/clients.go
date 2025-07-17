@@ -10,14 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
     "github.com/aws/aws-sdk-go-v2/service/xray"
+	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
 )
-
-type AWSClients struct {
-	LambdaClient     *lambda.Client
-	CloudWatchClient *cloudwatch.Client
-	XRayClient       *xray.Client
-	LogsClient       *cloudwatchlogs.Client
-}
 
 // NewAWSClients creates and returns AWS service clients required for the analyzer.
 // 
@@ -28,13 +22,13 @@ type AWSClients struct {
 // such as specifying a region, credentials provider, or profile.
 //
 // Returns an AWSClients struct containing initialized clients or an error if config loading fails.
-func NewAWSClients(ctx context.Context, opts ...func(*config.LoadOptions) error) (*AWSClients, error) {
+func NewAWSClients(ctx context.Context, opts ...func(*config.LoadOptions) error) (*sdktypes.AWSClients, error) {
 	cfg, err := config.LoadDefaultConfig(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	return &AWSClients{
+	return &sdktypes.AWSClients{
 		LambdaClient:     lambda.NewFromConfig(cfg),
 		CloudWatchClient: cloudwatch.NewFromConfig(cfg),
 		XRayClient:       xray.NewFromConfig(cfg),

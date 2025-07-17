@@ -7,7 +7,6 @@ import (
     "github.com/aws/aws-sdk-go-v2/aws"
     "github.com/aws/aws-sdk-go-v2/service/cloudwatch"
     "github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
-    "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/clientmanager"
     sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
 )
 
@@ -15,7 +14,7 @@ type Fetcher struct {
     client *cloudwatch.Client
 }
 
-func New(clients *clientmanager.AWSClients) *Fetcher {
+func New(clients *sdktypes.AWSClients) *Fetcher {
     return &Fetcher{
         client: clients.CloudWatchClient,
     }
