@@ -22,3 +22,11 @@ type AWSClients struct {
 	XRayClient       *xray.Client
 	LogsClient       *cloudwatchlogs.Client
 }
+
+type ThrottleRateReturn struct {
+	ThrottleRate float64
+	FunctionName string
+	Qualifier string
+    StartTime    time.Time // Start of the query interval (UTC)
+    EndTime      time.Time // End of the query interval (UTC)	
+}
