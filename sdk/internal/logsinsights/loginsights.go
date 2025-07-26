@@ -10,7 +10,8 @@ import (
     "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
     cloudwatchlogstypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
     sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
-)
+    "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/utils"
+) 
 
 type Fetcher struct {
     client *cloudwatchlogs.Client
@@ -23,9 +24,14 @@ func New(clients *sdktypes.AWSClients) *Fetcher {
 func (f *Fetcher) RunQuery(ctx context.Context, fq sdktypes.FunctionQuery, queryString string) ([]map[string]string, error) {
     logGroup := fmt.Sprintf("/aws/lambda/%s", fq.FunctionName)
 
+    finalQuery := queryString
+    if fq.Qualifier != "" {
+        finalQuery = utils.AddQualifierFilter(queryString, fq.Qualifier)
+    }
+
     startResp, err := f.client.StartQuery(ctx, &cloudwatchlogs.StartQueryInput{
         LogGroupNames: []string{logGroup},
-        QueryString:   aws.String(queryString),
+        QueryString:   aws.String(finalQuery),
         StartTime:     aws.Int64(fq.StartTime.Unix()),
         EndTime:       aws.Int64(fq.EndTime.Unix()),
     })

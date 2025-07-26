@@ -21,4 +21,5 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.34.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/xray v1.31.7 // indirect
 	github.com/aws/smithy-go v1.22.4 // indirect
+	gonum.org/v1/gonum v0.16.0
 )

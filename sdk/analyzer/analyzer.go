@@ -60,3 +60,35 @@ func (a *Analyzer) GetTimeoutRate(
     }
     return metrics.GetTimeoutRate(ctx, a.cloudwatchfetcher, a.logsFetcher, query, period)
 }
+
+func (a *Analyzer) GetColdStartRate(
+    ctx context.Context,
+    functionARN string,
+    qualifier string,
+    startTime, endTime time.Time,
+    period int32,    
+) (*sdktypes.ColdStartRateReturn, error) {
+    query := sdktypes.FunctionQuery{
+        FunctionName: functionARN,
+        Qualifier:    qualifier,
+        StartTime:    startTime,
+        EndTime:      endTime,
+    }  
+    return metrics.GetColdStartRate(ctx, a.logsFetcher, query, period)
+}
+
+func (a *Analyzer) GetMaxMemoryUsageStatistics(
+    ctx context.Context,
+    functionARN string,
+    qualifier string,
+    startTime, endTime time.Time,
+    period int32,
+) (*sdktypes.MemoryUsagePercentilesReturn, error) {
+    query := sdktypes.FunctionQuery{
+        FunctionName: functionARN,
+        Qualifier:    qualifier,
+        StartTime:    startTime,
+        EndTime:      endTime,
+    }
+    return metrics.GetMaxMemoryUsageStatistics(ctx, a.logsFetcher, query, period)
+}

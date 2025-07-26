@@ -45,3 +45,26 @@ type ConfigOptions struct {
 	AccessKeyID     string
 	SecretAccessKey string
 }
+
+type ColdStartRateReturn struct {
+	ColdStartRate float32 // Timedout Invocations / Total
+	FunctionName string // Name of the function
+	Qualifier string // Qualifier of the function
+    StartTime    time.Time // Start of the query interval (UTC)
+    EndTime      time.Time // End of the query interval (UTC)	
+}
+
+// MemoryUsagePercentilesReturn holds various statistics on the maximum used memory of invocations
+type MemoryUsagePercentilesReturn struct{
+        MinUsageRate    float32 // Min (max) Memory usage of any run
+        MaxUsageRate    float32 // Max (max) Memory usage of any run
+        MedianUsageRate float32 // Median (max) Memory usage of any run
+		MeanUsageRate   float32 // Mean (max) Memory usage of any run
+        P95UsageRate    *float32 // Pointers as these values can be nil
+        P99UsageRate    *float32 // in case of too little samples
+		Conf95UsageRate *float32 // 95% confidence interval
+        FunctionARN    string // ARN of the lambda function
+        Qualifier       string // Qualifier of the lambda function
+        StartTime       time.Time // earliest considered invocation
+        EndTime         time.Time // latest considered invocation
+    }
