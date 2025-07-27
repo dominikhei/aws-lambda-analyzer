@@ -92,3 +92,19 @@ func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
     }
     return metrics.GetMaxMemoryUsageStatistics(ctx, a.logsFetcher, query, period)
 }
+
+func (a *ServerlessStats) GetErrorRate(
+    ctx context.Context,
+    functionARN string,
+    qualifier string,
+    startTime, endTime time.Time,
+    period int32,
+) (*sdktypes.ErrorRateReturn, error) {
+    query := sdktypes.FunctionQuery{
+        FunctionName: functionARN,
+        Qualifier:    qualifier,
+        StartTime:    startTime,
+        EndTime:      endTime,
+    }
+    return metrics.GetErrorRate(ctx, a.logsFetcher, query, period)
+}

@@ -22,17 +22,44 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 
 
 ## Available Metrics
-- Cold start rate
-- Memory usage statistics
-- Timeout rate 
-- Throttle rate
+
+- [Cold Start Rate](#cold-start-rate)
+- [Memory Usage Statistics](#memory-usage-statistics)
+- [Timeout Rate](#timeout-rate)
+- [Throttle Rate](#throttle-rate)
+- [Dead Letter Queue Statistics](#dead-letter-queue-statistics)
 
 
 
 ## Detailed explanations
 
-__Cold start rate__
+### Cold Start Rate
 
-| Sources      | Calculation                                                                                        | Return value            |
-|--------------|----------------------------------------------------------------------------------------------------|-------------------------|
-| Logsinsights | Filter for logs that contain initDuration and divide the sum of those invocations by the total ones | ColdStartRate : float32 |
+| Source        | Calculation                                                   | Aggregation Metric | Return Type | Notes |
+|---------------|---------------------------------------------------------------|---------------------|-------------|-------|
+| Logs Insights | sum(invocations with initDuration) / sum(all invocations)     | Cold Start Rate     | float32     |       |
+
+
+### Memory Usage Statistics
+
+| Source        | Calculation                         | Aggregation Metric                              | Return Type | Notes                                      |
+|---------------|--------------------------------------|--------------------------------------------------|-------------|--------------------------------------------|
+| Logs Insights | Used Memory / Allocated Memory       | Minimum Memory Usage Rate                        | float32     |                                            |
+|               |                                      | Maximum Memory Usage Rate                        | float32     |                                            |
+|               |                                      | Median Memory Usage Rate                         | float32     |                                            |
+|               |                                      | Mean Memory Usage Rate                           | float32     |                                            |
+|               |                                      | 95th Percentile Memory Usage Rate                | float32     | Requires ≥ 20 invocations                  |
+|               |                                      | 99th Percentile Memory Usage Rate                | float32     | Requires ≥ 100 invocations                 |
+|               |                                      | 95% Confidence Interval of Memory Usage Rate     | float32     | Requires ≥ 30 invocations                  |
+
+### Throttle Rate
+
+| Source        | Calculation                                                         | Aggregation Metric | Return Type | Notes |
+|---------------|----------------------------------------------------------------------|---------------------|-------------|-------|
+| CloudWatch    | Throttles / Invocations                                              | Throttle Rate       | float32     |       |
+
+### Timeout Rate
+
+| Source        | Calculation                                                         | Aggregation Metric | Return Type | Notes |
+|---------------|----------------------------------------------------------------------|---------------------|-------------|-------|
+| CloudWatch    | Timeouts / Invocations                                               | Timeout Rate        | float32     |       |

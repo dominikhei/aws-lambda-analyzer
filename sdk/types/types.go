@@ -68,3 +68,27 @@ type MemoryUsagePercentilesReturn struct{
         StartTime       time.Time // earliest considered invocation
         EndTime         time.Time // latest considered invocation
     }
+
+// BaseStatistics contains general statistics about the lambda function
+type BaseStatisticsReturn struct {
+    FunctionARN           string
+	FunctionName		  string
+    Qualifier             string
+    MemorySizeMB          int
+    TimeoutSeconds        int
+    Runtime               string
+    LastModified          string
+    ProvisionedConcurrency int
+    NumInvocations        int64
+    EnvironmentVariables  map[string]string
+    StartTime    time.Time
+    EndTime      time.Time
+}
+
+type ErrorRateReturn struct {
+    FunctionName string
+    Qualifier    string
+    StartTime    time.Time
+    EndTime      time.Time
+    ErrorRate    float32
+}
