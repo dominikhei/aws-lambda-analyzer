@@ -33,49 +33,68 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 
 
 
-## Detailed explanations
+## Detailed Metric Explanations
 
 ### Cold Start Rate
 
-| Source        | Calculation                                                   | Aggregation Metric | Return Type | Notes |
-|---------------|---------------------------------------------------------------|---------------------|-------------|-------|
-| Logs Insights | sum(invocations with initDuration) / sum(all invocations)     | Cold Start Rate     | float32     |       |
+- **Source**: Logs Insights  
+- **Formula**:  
+  `sum(invocations with initDuration) / sum(all invocations)`  
+- **Return Type**: `float32`
 
+---
 
 ### Memory Usage Statistics
 
-| Source        | Calculation                         | Aggregation Metric                              | Return Type | Notes                                      |
-|---------------|--------------------------------------|--------------------------------------------------|-------------|--------------------------------------------|
-| Logs Insights | Used Memory / Allocated Memory       | Minimum Memory Usage Rate                        | float32     |                                            |
-|               |                                      | Maximum Memory Usage Rate                        | float32     |                                            |
-|               |                                      | Median Memory Usage Rate                         | float32     |                                            |
-|               |                                      | Mean Memory Usage Rate                           | float32     |                                            |
-|               |                                      | 95th Percentile Memory Usage Rate                | float32     | Requires ≥ 20 invocations                  |
-|               |                                      | 99th Percentile Memory Usage Rate                | float32     | Requires ≥ 100 invocations                 |
-|               |                                      | 95% Confidence Interval of Memory Usage Rate     | float32     | Requires ≥ 30 invocations                  |
+- **Source**: Logs Insights  
+- **Formula**:  
+  `Used Memory / Allocated Memory`  
+- **Return Type**: `float32`  
+- **Available Aggregations**:  
+  - Minimum Memory Usage Rate  
+  - Maximum Memory Usage Rate  
+  - Median Memory Usage Rate  
+  - Mean Memory Usage Rate  
+  - 95th Percentile Memory Usage Rate (requires ≥ 20 invocations)  
+  - 99th Percentile Memory Usage Rate (requires ≥ 100 invocations)  
+  - 95% Confidence Interval of Memory Usage Rate (requires ≥ 30 invocations)
+
+---
 
 ### Throttle Rate
 
-| Source        | Calculation                                                         | Aggregation Metric | Return Type | Notes |
-|---------------|----------------------------------------------------------------------|---------------------|-------------|-------|
-| CloudWatch    | Throttles / Invocations                                              | Throttle Rate       | float32     |       |
+- **Source**: CloudWatch  
+- **Formula**:  
+  `Throttles / Invocations`  
+- **Return Type**: `float32`
+
+---
 
 ### Timeout Rate
 
-| Source        | Calculation                                                         | Aggregation Metric | Return Type | Notes |
-|---------------|----------------------------------------------------------------------|---------------------|-------------|-------|
-| CloudWatch    | Timeouts / Invocations                                               | Timeout Rate        | float32     |       |
+- **Source**: CloudWatch  
+- **Formula**:  
+  `Timeouts / Invocations`  
+- **Return Type**: `float32`
+
+---
 
 ### Error Rate
 
-| Source        | Calculation                              | Aggregation Metric | Return Type | Notes                                        |
-|---------------|-------------------------------------------|---------------------|-------------|----------------------------------------------|
-| Logs Insights | sum(invocations with error) / sum(all invocations) | Error Rate          | float32     | Based on distinct requestID's logs with `ERROR` present   |
+- **Source**: Logs Insights  
+- **Formula**:  
+  `sum(invocations with error) / sum(all invocations)`  
+- **Return Type**: `float32`  
+- **Notes**:  
+  Based on distinct `requestID`s where `[ERROR]` is present in logs. Retries are not counted.
+
+---
 
 ### Error Types
 
-### Error Types
-
-| Source        | Calculation                                                                                     | Aggregation Metric | Return Type             | Notes                                                                 |
-|---------------|--------------------------------------------------------------------------------------------------|---------------------|--------------------------|-----------------------------------------------------------------------|
-| Logs Insights | Count of logs grouped by semantic error type | Error Types         | `[]ErrorType`   | Extracted from logs containing `[ERROR]`, grouped by semantic category |
+- **Source**: Logs Insights  
+- **Return Type**: `[]ErrorType`  
+- **Description**:  
+  Extracted from logs containing `[ERROR]`, grouped by semantic category (e.g., timeout, dependency error).  
+- **Notes**:  
+  Unlike error rate, retries are counted as distinct errors.
