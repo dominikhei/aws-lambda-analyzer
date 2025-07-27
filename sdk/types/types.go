@@ -63,7 +63,7 @@ type MemoryUsagePercentilesReturn struct{
         P95UsageRate    *float32 // Pointers as these values can be nil
         P99UsageRate    *float32 // in case of too little samples
 		Conf95UsageRate *float32 // 95% confidence interval
-        FunctionARN    string // ARN of the lambda function
+        FunctionName    string // Name of the lambda function
         Qualifier       string // Qualifier of the lambda function
         StartTime       time.Time // earliest considered invocation
         EndTime         time.Time // latest considered invocation

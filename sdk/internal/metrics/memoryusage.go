@@ -44,7 +44,7 @@ func GetMaxMemoryUsageStatistics(
         P95UsageRate: memoryStats.P95,
         P99UsageRate: memoryStats.P99,
 		Conf95UsageRate: memoryStats.ConfInt95,
-        FunctionARN: query.FunctionName,
+        FunctionName: query.FunctionName,
         Qualifier:    query.Qualifier,
         StartTime:    query.StartTime,
         EndTime:      query.EndTime,

@@ -27,7 +27,7 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 - [Memory Usage Statistics](#memory-usage-statistics)
 - [Timeout Rate](#timeout-rate)
 - [Throttle Rate](#throttle-rate)
-- [Dead Letter Queue Statistics](#dead-letter-queue-statistics)
+- [Error Rate](#error-rate)
 
 
 
@@ -63,3 +63,9 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 | Source        | Calculation                                                         | Aggregation Metric | Return Type | Notes |
 |---------------|----------------------------------------------------------------------|---------------------|-------------|-------|
 | CloudWatch    | Timeouts / Invocations                                               | Timeout Rate        | float32     |       |
+
+### Error Rate
+
+| Source        | Calculation                              | Aggregation Metric | Return Type | Notes                                        |
+|---------------|-------------------------------------------|---------------------|-------------|----------------------------------------------|
+| Logs Insights | sum(invocations with @error) / sum(all invocations) | Error Rate          | float32     | Based on REPORT logs with `@error` present   |

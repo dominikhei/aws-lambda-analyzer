@@ -22,9 +22,6 @@ fields @message
 `
 
 const LambdaErrorRate = `
-filter @type = "REPORT"
-stats
-  count(*) as totalInvocations,
-  count(if @errorCode != '') as errorInvocations
-| display errorInvocations / totalInvocations as errorRate
+filter @message like /(?i)error/ 
+| stats count(*) as errorInvocations, count(*) + count(@message not like /(?i)error/) as totalInvocations
 `
