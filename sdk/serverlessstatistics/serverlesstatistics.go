@@ -1,4 +1,4 @@
-package analyzer
+package serverlessstatistics
 
 import (
 	"context"
@@ -12,24 +12,24 @@ import (
 	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
 )
 
-type Analyzer struct {
+type ServerlessStats struct {
     cloudwatchfetcher *cloudwatchfetcher.Fetcher
     logsFetcher *logsinsightsfetcher.Fetcher
 }
 
-func New(ctx context.Context, opts sdktypes.ConfigOptions) *Analyzer {
+func New(ctx context.Context, opts sdktypes.ConfigOptions) *ServerlessStats {
     clients, err := clientmanager.NewAWSClients(ctx, opts)
     if err != nil {
         log.Fatalf("failed to initialize AWS clients: %v", err)
     }
 
-    return &Analyzer{
+    return &ServerlessStats{
         cloudwatchfetcher: cloudwatchfetcher.New(clients),
         logsFetcher: logsinsightsfetcher.New(clients),
     }
 }
 
-func (a *Analyzer) GetThrottleRate(
+func (a *ServerlessStats) GetThrottleRate(
     ctx context.Context,
     functionName string,
     qualifier string,
@@ -45,7 +45,7 @@ func (a *Analyzer) GetThrottleRate(
     return metrics.GetThrottleRate(ctx, a.cloudwatchfetcher, query, period)
 }
 
-func (a *Analyzer) GetTimeoutRate(
+func (a *ServerlessStats) GetTimeoutRate(
     ctx context.Context,
     functionName string,
     qualifier string,
@@ -61,7 +61,7 @@ func (a *Analyzer) GetTimeoutRate(
     return metrics.GetTimeoutRate(ctx, a.cloudwatchfetcher, a.logsFetcher, query, period)
 }
 
-func (a *Analyzer) GetColdStartRate(
+func (a *ServerlessStats) GetColdStartRate(
     ctx context.Context,
     functionARN string,
     qualifier string,
@@ -77,7 +77,7 @@ func (a *Analyzer) GetColdStartRate(
     return metrics.GetColdStartRate(ctx, a.logsFetcher, query, period)
 }
 
-func (a *Analyzer) GetMaxMemoryUsageStatistics(
+func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
     ctx context.Context,
     functionARN string,
     qualifier string,
