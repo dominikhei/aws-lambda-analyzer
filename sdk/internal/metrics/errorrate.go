@@ -1,4 +1,4 @@
-package metrics 
+package metrics
 
 import (
 	"context"
@@ -16,38 +16,44 @@ func GetErrorRate(
     query sdktypes.FunctionQuery,
 	period int32,
 ) (*sdktypes.ErrorRateReturn, error) {
-    results, err := logsFetcher.RunQuery(ctx, query, queries.LambdaErrorRate)
+    results, err := logsFetcher.RunQuery(ctx, query, queries.LambdaErrorCount)
     if err != nil {
-        return nil, fmt.Errorf("run logs insights query: %w", err)
-    }
-
-    var total, errors int64
-    for _, row := range results {
-        if val, ok := row["totalInvocations"]; ok {
-            total, _ = strconv.ParseInt(val, 10, 64)
+        return nil, fmt.Errorf("fetch errors from logs insights: %w", err)
+    }    
+    var errorCount int
+    if len(results) > 0 {
+        val := results[0]["errorCount"]
+        if val != "" {
+            errorCount, err = strconv.Atoi(val)
+            if err != nil {
+                return nil, fmt.Errorf("parse errorCount from logs: %w", err)
+            }
         }
-        if val, ok := row["errorInvocations"]; ok {
-            errors, _ = strconv.ParseInt(val, 10, 64)
+    }
+
+    results, err = logsFetcher.RunQuery(ctx, query, queries.LambdaUniqueRequests)
+    if err != nil {
+        return nil, fmt.Errorf("fetch errors from logs insights: %w", err)
+    }    
+    var invocationsCount int
+    if len(results) > 0 {
+        val := results[0]["invocationsCount"]
+        if val != "" {
+            invocationsCount, err = strconv.Atoi(val)
+            if err != nil {
+                return nil, fmt.Errorf("parse invocationsCount from logs: %w", err)
+            }
         }
     }
 
-    if total == 0 {
-        return &sdktypes.ErrorRateReturn{
-            FunctionName: query.FunctionName,
-            Qualifier:   query.Qualifier,
-            StartTime:   query.StartTime,
-            EndTime:     query.EndTime,
-            ErrorRate:   0,
-        }, nil
-    }
 
-    errorRate := float32(errors) / float32(total)
+    errorRate := float64(errorCount) / float64(invocationsCount)
 
     return &sdktypes.ErrorRateReturn{
         FunctionName: query.FunctionName,
         Qualifier:   query.Qualifier,
         StartTime:   query.StartTime,
         EndTime:     query.EndTime,
-        ErrorRate:   errorRate,
+        ErrorRate:   float32(errorRate),
     }, nil
 }

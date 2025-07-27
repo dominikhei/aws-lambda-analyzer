@@ -68,4 +68,4 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 
 | Source        | Calculation                              | Aggregation Metric | Return Type | Notes                                        |
 |---------------|-------------------------------------------|---------------------|-------------|----------------------------------------------|
-| Logs Insights | sum(invocations with @error) / sum(all invocations) | Error Rate          | float32     | Based on REPORT logs with `@error` present   |
+| Logs Insights | sum(invocations with @error) / sum(all invocations) | Error Rate          | float32     | Based on distinct requestID's logs with `ERROR` present   |

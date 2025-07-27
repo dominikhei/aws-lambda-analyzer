@@ -21,7 +21,12 @@ fields @message
     count(initDuration) * 100.0 / count(*) as coldStartRate
 `
 
-const LambdaErrorRate = `
-filter @message like /(?i)error/ 
-| stats count(*) as errorInvocations, count(*) + count(@message not like /(?i)error/) as totalInvocations
+const LambdaErrorCount = `
+filter @message like /(?i)(ERROR)/
+| stats count_distinct(@requestId) as errorCount
 `
+
+const LambdaUniqueRequests = `
+stats count_distinct(@requestId) as invocationsCount
+`
+
