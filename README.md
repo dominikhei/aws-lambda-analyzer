@@ -3,6 +3,7 @@
 Serverless Statistics is a Go sdk that allows you to extract various statistics on your AWS lambda functions, that can be used for monitoring, performance analysis, improvements and automations. It provides a simple and clean interface and handles everything for you such that you can just focus on upstream logic and the data will be provided for you. For examples on how to use it refer to the examples section.
 
 ## Key Configurations
+
 ### Credentials
 The SDK uses the standard AWS credentials chain for authentication and will look for credentials in that order. The excemption from this is, if you specify `AccessKeyID` and `SecretAccessKey` in [ConfigOptions](./sdk/types/types.go#L42-L47) in the application code.
 
@@ -28,6 +29,7 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 - [Timeout Rate](#timeout-rate)
 - [Throttle Rate](#throttle-rate)
 - [Error Rate](#error-rate)
+- [Error Types](#error-types)
 
 
 
@@ -68,4 +70,12 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 
 | Source        | Calculation                              | Aggregation Metric | Return Type | Notes                                        |
 |---------------|-------------------------------------------|---------------------|-------------|----------------------------------------------|
-| Logs Insights | sum(invocations with @error) / sum(all invocations) | Error Rate          | float32     | Based on distinct requestID's logs with `ERROR` present   |
+| Logs Insights | sum(invocations with error) / sum(all invocations) | Error Rate          | float32     | Based on distinct requestID's logs with `ERROR` present   |
+
+### Error Types
+
+### Error Types
+
+| Source        | Calculation                                                                                     | Aggregation Metric | Return Type             | Notes                                                                 |
+|---------------|--------------------------------------------------------------------------------------------------|---------------------|--------------------------|-----------------------------------------------------------------------|
+| Logs Insights | Count of logs grouped by semantic error type | Error Types         | `[]ErrorType`   | Extracted from logs containing `[ERROR]`, grouped by semantic category |

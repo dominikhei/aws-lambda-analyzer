@@ -92,3 +92,16 @@ type ErrorRateReturn struct {
     EndTime      time.Time
     ErrorRate    float32
 }
+
+type ErrorType struct {
+	ErrorCategory string `json:"errorCategory"`
+	ErrorCount    int64  `json:"errorCount"`
+}
+
+type ErrorTypesReturn struct {
+	Errors       []ErrorType          `json:"errors"`
+	FunctionName string               `json:"functionName"`
+	Qualifier    string               `json:"qualifier"`
+	StartTime    time.Time                `json:"startTime"`
+	EndTime      time.Time                `json:"endTime"`
+}

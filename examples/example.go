@@ -1,38 +1,33 @@
-package examples
+package main
 
 import (
 	"context"
 	"time"
 	"fmt"
 
-	"github.com/dominikhei/aws-lambda-analyzer/sdk/analyzer"
+	"github.com/dominikhei/aws-lambda-analyzer/sdk/serverlessstatistics"
 	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
 )
 
-func examples() {
+func main() {
 	ctx := context.Background()
     opts := sdktypes.ConfigOptions{
-        Region:  "us-west-2",
+        Region:  "eu-central-1",
         Profile: "default",
 	}
 
-	a := analyzer.New(ctx, opts)
-    functionName := "my-function"
-    qualifier := "prod"
-    startTime := time.Now().Add(-1 * time.Hour)
+	a := serverlessstatistics.New(ctx, opts)
+    functionName := "bitvavo"
+    //qualifier := "prod"
+    layout := "2006-01-02 15:04:05"
+    startTime, _ := time.Parse(layout, "2025-01-07 00:00:00")
     endTime := time.Now()
-    period := int32(60)
+    period := int32(1)
 
-	result, err := a.GetThrottleRate(ctx, functionName, qualifier, startTime, endTime, period)
+	rate, err := a.GetErrorCategoryStatistics(ctx, functionName, "", startTime, endTime, period)
 		if err != nil {
 			fmt.Printf("failed to get throttle rate: %v", err)
 		}
+	fmt.Print(rate)
 
-    fmt.Printf("Throttle rate for %s:%s between %s and %s is %.2f%%\n",
-        result.FunctionName,
-        result.Qualifier,
-        result.StartTime.Format(time.RFC3339),
-        result.EndTime.Format(time.RFC3339),
-        result.ThrottleRate*100,
-    )
 }

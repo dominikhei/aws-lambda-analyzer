@@ -63,13 +63,13 @@ func (a *ServerlessStats) GetTimeoutRate(
 
 func (a *ServerlessStats) GetColdStartRate(
     ctx context.Context,
-    functionARN string,
+    functionName string,
     qualifier string,
     startTime, endTime time.Time,
     period int32,    
 ) (*sdktypes.ColdStartRateReturn, error) {
     query := sdktypes.FunctionQuery{
-        FunctionName: functionARN,
+        FunctionName: functionName,
         Qualifier:    qualifier,
         StartTime:    startTime,
         EndTime:      endTime,
@@ -79,13 +79,13 @@ func (a *ServerlessStats) GetColdStartRate(
 
 func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
     ctx context.Context,
-    functionARN string,
+    functionName string,
     qualifier string,
     startTime, endTime time.Time,
     period int32,
 ) (*sdktypes.MemoryUsagePercentilesReturn, error) {
     query := sdktypes.FunctionQuery{
-        FunctionName: functionARN,
+        FunctionName: functionName,
         Qualifier:    qualifier,
         StartTime:    startTime,
         EndTime:      endTime,
@@ -95,16 +95,32 @@ func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
 
 func (a *ServerlessStats) GetErrorRate(
     ctx context.Context,
-    functionARN string,
+    functionName string,
     qualifier string,
     startTime, endTime time.Time,
     period int32,
 ) (*sdktypes.ErrorRateReturn, error) {
     query := sdktypes.FunctionQuery{
-        FunctionName: functionARN,
+        FunctionName: functionName,
         Qualifier:    qualifier,
         StartTime:    startTime,
         EndTime:      endTime,
     }
     return metrics.GetErrorRate(ctx, a.logsFetcher, query, period)
+}
+
+func (a *ServerlessStats) GetErrorCategoryStatistics(
+    ctx context.Context,
+    functionName string,
+    qualifier string,
+    startTime, endTime time.Time,
+    period int32,
+) (*sdktypes.ErrorTypesReturn, error) {
+    query := sdktypes.FunctionQuery{
+        FunctionName: functionName,
+        Qualifier:    qualifier,
+        StartTime:    startTime,
+        EndTime:      endTime,
+    }
+    return metrics.GetErrorTypes(ctx, a.logsFetcher, query, period)
 }
