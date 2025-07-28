@@ -2,13 +2,13 @@ package metrics
 
 import (
     "context"
-    "errors"
     "fmt"
     "strconv"
 
     cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
     logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
     sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+    sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/queries"
 )
 
@@ -39,14 +39,12 @@ func GetTimeoutRate(
     if err != nil {
         return nil, fmt.Errorf("fetch invocations metric: %w", err)
     }
-
     invocationsSum, err := sumMetricValues(invocationsResults)
     if err != nil {
         return nil, fmt.Errorf("parse invocations metric data: %w", err)
     }
-
     if invocationsSum == 0 {
-        return nil, errors.New("total invocations is zero, cannot calculate timeout rate")
+        return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
     }
 
     timeoutRate := float64(timeoutCount) / invocationsSum

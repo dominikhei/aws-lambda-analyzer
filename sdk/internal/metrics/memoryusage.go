@@ -5,18 +5,34 @@ import (
 	"fmt"
 	"strconv"
 
+	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
 	logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/queries"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/utils"
 	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
 )
 
 func GetMaxMemoryUsageStatistics(
 	ctx context.Context,
 	logsFetcher *logsinsightsfetcher.Fetcher,
+	cwFetcher *cloudwatchfetcher.Fetcher,
 	query sdktypes.FunctionQuery,
 	period int32,
 ) (*sdktypes.MemoryUsagePercentilesReturn, error) {
+
+    invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum", period)
+    if err != nil {
+        return nil, fmt.Errorf("fetch invocations metric: %w", err)
+    }
+    invocationsSum, err := sumMetricValues(invocationsResults)
+    if err != nil {
+        return nil, fmt.Errorf("parse invocations metric data: %w", err)
+    }
+    if invocationsSum == 0 {
+        return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
+    }
+
 	results, err := logsFetcher.RunQuery(ctx, query, queries.LambdaMemoryUtilizationQuery)
 	if err != nil {
 		return nil, fmt.Errorf("run logs insights query: %w", err)

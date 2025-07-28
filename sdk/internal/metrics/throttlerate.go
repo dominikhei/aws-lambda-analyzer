@@ -3,10 +3,10 @@ package metrics
 import (
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
     "context"
-    "errors"
     "fmt"
     "github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
     sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+    sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
 )
 
 func GetThrottleRate(ctx context.Context, f *cloudwatchfetcher.Fetcher, query sdktypes.FunctionQuery, period int32) (*sdktypes.ThrottleRateReturn, error) {
@@ -28,7 +28,7 @@ func GetThrottleRate(ctx context.Context, f *cloudwatchfetcher.Fetcher, query sd
         return nil, fmt.Errorf("parse invocations metric data: %w", err)
     }
     if invocationsSum == 0 {
-        return nil, errors.New("total invocations is zero, cannot calculate throttle rate")
+        return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
     }
     throttleRate := throttlesSum / invocationsSum
 	result := &sdktypes.ThrottleRateReturn{

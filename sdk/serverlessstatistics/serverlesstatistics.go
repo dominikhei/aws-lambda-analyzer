@@ -16,7 +16,7 @@ import (
 )
 
 type ServerlessStats struct {
-    cloudwatchfetcher *cloudwatchfetcher.Fetcher
+    cloudwatchFetcher *cloudwatchfetcher.Fetcher
     logsFetcher *logsinsightsfetcher.Fetcher
     lambdaClient      *lambda.Client
 }
@@ -28,7 +28,7 @@ func New(ctx context.Context, opts sdktypes.ConfigOptions) *ServerlessStats {
     }
 
     return &ServerlessStats{
-        cloudwatchfetcher: cloudwatchfetcher.New(clients),
+        cloudwatchFetcher: cloudwatchfetcher.New(clients),
         logsFetcher: logsinsightsfetcher.New(clients),
         lambdaClient: clients.LambdaClient,
     }
@@ -64,7 +64,7 @@ func (a *ServerlessStats) GetThrottleRate(
         return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
     }
 
-    return metrics.GetThrottleRate(ctx, a.cloudwatchfetcher, query, period)
+    return metrics.GetThrottleRate(ctx, a.cloudwatchFetcher, query, period)
 }
 
 func (a *ServerlessStats) GetTimeoutRate(
@@ -97,7 +97,7 @@ func (a *ServerlessStats) GetTimeoutRate(
         return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
     }
 
-    return metrics.GetTimeoutRate(ctx, a.cloudwatchfetcher, a.logsFetcher, query, period)
+    return metrics.GetTimeoutRate(ctx, a.cloudwatchFetcher, a.logsFetcher, query, period)
 }
 
 func (a *ServerlessStats) GetColdStartRate(
@@ -130,7 +130,7 @@ func (a *ServerlessStats) GetColdStartRate(
         return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
     }
 
-    return metrics.GetColdStartRate(ctx, a.logsFetcher, query, period)
+    return metrics.GetColdStartRate(ctx, a.logsFetcher, a.cloudwatchFetcher, query, period)
 }
 
 func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
@@ -163,7 +163,7 @@ func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
         return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
     }
 
-    return metrics.GetMaxMemoryUsageStatistics(ctx, a.logsFetcher, query, period)
+    return metrics.GetMaxMemoryUsageStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, query, period)
 }
 
 func (a *ServerlessStats) GetErrorRate(
@@ -196,7 +196,7 @@ func (a *ServerlessStats) GetErrorRate(
         return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
     }
 
-    return metrics.GetErrorRate(ctx, a.logsFetcher, query, period)
+    return metrics.GetErrorRate(ctx, a.logsFetcher, a.cloudwatchFetcher, query, period)
 }
 
 func (a *ServerlessStats) GetErrorCategoryStatistics(
@@ -229,5 +229,5 @@ func (a *ServerlessStats) GetErrorCategoryStatistics(
         return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
     }
 
-    return metrics.GetErrorTypes(ctx, a.logsFetcher, query, period)
+    return metrics.GetErrorTypes(ctx, a.logsFetcher, a.cloudwatchFetcher, query, period)
 }
