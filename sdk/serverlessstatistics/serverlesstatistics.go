@@ -4,17 +4,21 @@ import (
 	"context"
 	"log"
 	"time"
+    "fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/clientmanager"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
 	logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/metrics"
 	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+    "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/utils"
 )
 
 type ServerlessStats struct {
     cloudwatchfetcher *cloudwatchfetcher.Fetcher
     logsFetcher *logsinsightsfetcher.Fetcher
+    lambdaClient      *lambda.Client
 }
 
 func New(ctx context.Context, opts sdktypes.ConfigOptions) *ServerlessStats {
@@ -26,6 +30,7 @@ func New(ctx context.Context, opts sdktypes.ConfigOptions) *ServerlessStats {
     return &ServerlessStats{
         cloudwatchfetcher: cloudwatchfetcher.New(clients),
         logsFetcher: logsinsightsfetcher.New(clients),
+        lambdaClient: clients.LambdaClient,
     }
 }
 
@@ -42,6 +47,23 @@ func (a *ServerlessStats) GetThrottleRate(
         StartTime:    startTime,
         EndTime:      endTime,
     }
+
+    exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
+    if err != nil {
+        return nil, fmt.Errorf("checking if function exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("lambda function %q does not exist", functionName)
+    }
+
+    exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+    if err != nil {
+        return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+    }
+
     return metrics.GetThrottleRate(ctx, a.cloudwatchfetcher, query, period)
 }
 
@@ -58,6 +80,23 @@ func (a *ServerlessStats) GetTimeoutRate(
         StartTime:    startTime,
         EndTime:      endTime,
     }
+
+    exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
+    if err != nil {
+        return nil, fmt.Errorf("checking if function exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("lambda function %q does not exist", functionName)
+    }
+
+    exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+    if err != nil {
+        return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+    }
+
     return metrics.GetTimeoutRate(ctx, a.cloudwatchfetcher, a.logsFetcher, query, period)
 }
 
@@ -74,6 +113,23 @@ func (a *ServerlessStats) GetColdStartRate(
         StartTime:    startTime,
         EndTime:      endTime,
     }  
+
+    exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
+    if err != nil {
+        return nil, fmt.Errorf("checking if function exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("lambda function %q does not exist", functionName)
+    }
+
+    exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+    if err != nil {
+        return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+    }
+
     return metrics.GetColdStartRate(ctx, a.logsFetcher, query, period)
 }
 
@@ -90,6 +146,23 @@ func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
         StartTime:    startTime,
         EndTime:      endTime,
     }
+
+    exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
+    if err != nil {
+        return nil, fmt.Errorf("checking if function exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("lambda function %q does not exist", functionName)
+    }
+
+    exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+    if err != nil {
+        return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+    }
+
     return metrics.GetMaxMemoryUsageStatistics(ctx, a.logsFetcher, query, period)
 }
 
@@ -106,6 +179,23 @@ func (a *ServerlessStats) GetErrorRate(
         StartTime:    startTime,
         EndTime:      endTime,
     }
+
+    exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
+    if err != nil {
+        return nil, fmt.Errorf("checking if function exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("lambda function %q does not exist", functionName)
+    }
+
+    exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+    if err != nil {
+        return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+    }
+
     return metrics.GetErrorRate(ctx, a.logsFetcher, query, period)
 }
 
@@ -122,5 +212,22 @@ func (a *ServerlessStats) GetErrorCategoryStatistics(
         StartTime:    startTime,
         EndTime:      endTime,
     }
+
+    exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
+    if err != nil {
+        return nil, fmt.Errorf("checking if function exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("lambda function %q does not exist", functionName)
+    }
+
+    exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+    if err != nil {
+        return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+    }
+
     return metrics.GetErrorTypes(ctx, a.logsFetcher, query, period)
 }

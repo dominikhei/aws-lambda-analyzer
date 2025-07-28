@@ -1,6 +1,7 @@
-package utils 
+package utils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -10,8 +11,11 @@ import (
 
 	"gonum.org/v1/gonum/stat"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
 )
 
@@ -114,4 +118,38 @@ func  AddQualifierFilter(query, qualifier string) string {
     
     qualifierFilter := fmt.Sprintf("filter (%s)", strings.Join(filters, " or "))
     return fmt.Sprintf("%s\n| %s", qualifierFilter, query)
+}
+
+func FunctionExists(ctx context.Context, client *lambda.Client, functionName string) (bool, error) {
+    _, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
+        FunctionName: aws.String(functionName),
+    })
+
+    var nfe *types.ResourceNotFoundException
+    if errors.As(err, &nfe) {
+        return false, nil
+    }
+    if err != nil {
+        return false, err
+    }
+
+    return true, nil
+}
+
+func QualifierExists(ctx context.Context, client *lambda.Client, functionName, qualifier string) (bool, error) {
+    if qualifier == "" || qualifier == "$LATEST" {
+        return true, nil
+    }
+    _, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
+        FunctionName: aws.String(functionName),
+        Qualifier:    aws.String(qualifier),
+    })
+    var nfe *types.ResourceNotFoundException
+    if errors.As(err, &nfe) {
+        return false, nil
+    }
+    if err != nil {
+        return false, err
+    }
+    return true, nil
 }
