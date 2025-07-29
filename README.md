@@ -2,6 +2,13 @@
 
 Serverless Statistics is a Go sdk that allows you to extract various statistics on your AWS lambda functions, that can be used for monitoring, performance analysis, improvements and automations. It provides a simple and clean interface and handles everything for you such that you can just focus on upstream logic and the data will be provided for you. For examples on how to use it refer to the examples section.
 
+## How are Versions and Aliases considered?
+If a version tag is present, only the invocations for that specific version will be considered. If no tag is set in the `qualifier` parameter, the `$LATEST` qualifier will be used by default.
+
+Note: When using `$LATEST`, if your function was updated during the specified time frame, invocations from both the old and new versions will be included in the results (since both were `$LATEST` at different times). Set your timeframe carefully to avoid mixing versions unintentionally.
+
+There currently is no possibility to distinguish between different aliases in the query results.
+
 ## Key Configurations
 
 ### Credentials
@@ -17,9 +24,9 @@ When creating your client, you can specify the AWS region and other options via 
 You specify which Lambda function to analyze by providing:
 
 - __Function Name__ - The name of your Lambda function
-- __Qualifier__ (optional) - A specific version number or alias (e.g., "prod", "v1")
+- __Qualifier__ (optional) - A specific version number. Defaults to `$LATEST`.
 
-If no qualifier is provided, the SDK will analyze all logs and metrics for the function across all versions and aliases.
+If no qualifier is provided, the SDK will analyze all logs and metrics for the function across all versions.
 
 
 ## Available Metrics
@@ -86,7 +93,7 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
   `sum(invocations with error) / sum(all invocations)`  
 - **Return Type**: `float32`  
 - **Notes**:  
-  Based on distinct `requestID`s where `[ERROR]` is present in logs. Retries are not counted.
+  Based on distinct `requestID`s where `[ERROR]` is present in logs.
 
 ---
 
