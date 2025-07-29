@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
 	logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
@@ -33,7 +34,9 @@ func GetMaxMemoryUsageStatistics(
         return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
     }
 
-	results, err := logsFetcher.RunQuery(ctx, query, queries.LambdaMemoryUtilizationQuery)
+    escapedQualifier := strings.ReplaceAll(query.Qualifier, "$", "\\$")
+    queryString := fmt.Sprintf(queries.LambdaMemoryUtilizationQueryWithVersion, escapedQualifier)
+    results, err := logsFetcher.RunQuery(ctx, query, queryString)
 	if err != nil {
 		return nil, fmt.Errorf("run logs insights query: %w", err)
 	}

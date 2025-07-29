@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+    "strings"
 
 	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
 	logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
@@ -32,19 +33,23 @@ func GetColdStartRate(
         return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
     }
 
-	results, err := logsFetcher.RunQuery(ctx, query, queries.LambdaColdStartRate)
+    escapedQualifier := strings.ReplaceAll(query.Qualifier, "$", "\\$")
+    queryString := fmt.Sprintf(queries.LambdaColdStartRateWithVersion, escapedQualifier)
+	results, err := logsFetcher.RunQuery(ctx, query, queryString)
     if err != nil {
         return nil, fmt.Errorf("run logs insights query: %w", err)
     }
     var coldStartRate float64
-    if len(results) > 0 {
-        val := results[0]["coldStartRate"]
-        if val != "" {
-            coldStartRate, err = strconv.ParseFloat(val, 32)
-            if err != nil {
-                return nil, fmt.Errorf("parse coldStartRate from logs: %w", err)
-            }
+    totalStr := results[0]["totalInvocations"]
+    coldStr := results[0]["coldStartLines"]
+
+    if totalStr != "" && coldStr != "" {
+        total, err1 := strconv.ParseFloat(totalStr, 32)
+        cold, err2 := strconv.ParseFloat(coldStr, 32)
+        if err1 != nil || err2 != nil || total == 0 {
+            return nil, fmt.Errorf("invalid data from logs: total=%v, cold=%v", totalStr, coldStr)
         }
+        coldStartRate = cold / total
     }
 	return &sdktypes.ColdStartRateReturn{
         ColdStartRate:  float32(coldStartRate),

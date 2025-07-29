@@ -41,6 +41,9 @@ func (a *ServerlessStats) GetThrottleRate(
     startTime, endTime time.Time,
     period int32,
 ) (*sdktypes.ThrottleRateReturn, error) {
+    if qualifier == "" {
+        qualifier = "$LATEST"
+    }
     query := sdktypes.FunctionQuery{
         FunctionName: functionName,
         Qualifier:    qualifier,
@@ -74,6 +77,9 @@ func (a *ServerlessStats) GetTimeoutRate(
     startTime, endTime time.Time,
     period int32,
 ) (*sdktypes.TimeoutRateReturn, error) {
+    if qualifier == "" {
+        qualifier = "$LATEST"
+    }
     query := sdktypes.FunctionQuery{
         FunctionName: functionName,
         Qualifier:    qualifier,
@@ -107,6 +113,9 @@ func (a *ServerlessStats) GetColdStartRate(
     startTime, endTime time.Time,
     period int32,    
 ) (*sdktypes.ColdStartRateReturn, error) {
+    if qualifier == "" {
+        qualifier = "$LATEST"
+    }
     query := sdktypes.FunctionQuery{
         FunctionName: functionName,
         Qualifier:    qualifier,
@@ -140,6 +149,9 @@ func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
     startTime, endTime time.Time,
     period int32,
 ) (*sdktypes.MemoryUsagePercentilesReturn, error) {
+    if qualifier == "" {
+        qualifier = "$LATEST"
+    }
     query := sdktypes.FunctionQuery{
         FunctionName: functionName,
         Qualifier:    qualifier,
@@ -173,6 +185,9 @@ func (a *ServerlessStats) GetErrorRate(
     startTime, endTime time.Time,
     period int32,
 ) (*sdktypes.ErrorRateReturn, error) {
+    if qualifier == "" {
+        qualifier = "$LATEST"
+    }
     query := sdktypes.FunctionQuery{
         FunctionName: functionName,
         Qualifier:    qualifier,
@@ -196,7 +211,7 @@ func (a *ServerlessStats) GetErrorRate(
         return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
     }
 
-    return metrics.GetErrorRate(ctx, a.logsFetcher, a.cloudwatchFetcher, query, period)
+    return metrics.GetErrorRate(ctx, a.cloudwatchFetcher, query, period)
 }
 
 func (a *ServerlessStats) GetErrorCategoryStatistics(
@@ -206,6 +221,9 @@ func (a *ServerlessStats) GetErrorCategoryStatistics(
     startTime, endTime time.Time,
     period int32,
 ) (*sdktypes.ErrorTypesReturn, error) {
+    if qualifier == "" {
+        qualifier = "$LATEST"
+    }
     query := sdktypes.FunctionQuery{
         FunctionName: functionName,
         Qualifier:    qualifier,

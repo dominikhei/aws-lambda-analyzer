@@ -4,11 +4,11 @@ import (
     "context"
     "fmt"
     "strconv"
+    "strings"
 
     cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
     logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
     sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
-    sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/queries"
 )
 
@@ -19,12 +19,29 @@ func GetTimeoutRate(
     query sdktypes.FunctionQuery,
     period int32,
 ) (*sdktypes.TimeoutRateReturn, error) {
-    results, err := logsFetcher.RunQuery(ctx, query, queries.LambdaTimeoutQuery)
-	fmt.Print((results))
+
+    escapedQualifier := strings.ReplaceAll(query.Qualifier, "$", "\\$")
+    queryString := fmt.Sprintf(queries.LambdaUniqueRequestsWithVersion, escapedQualifier)
+    results, err := logsFetcher.RunQuery(ctx, query, queryString)
+    if err != nil {
+        return nil, fmt.Errorf("fetch errors from logs insights: %w", err)
+    }    
+    var invocationsCount int
+    if len(results) > 0 {
+        val := results[0]["invocationsCount"]
+        if val != "" {
+            invocationsCount, err = strconv.Atoi(val)
+            if err != nil {
+                return nil, fmt.Errorf("parse invocationsCount from logs: %w", err)
+            }
+        }
+    }
+    escapedQualifier = strings.ReplaceAll(query.Qualifier, "$", "\\$")
+    queryString = fmt.Sprintf(queries.LambdaTimeoutQueryWithVersion, escapedQualifier)
+    results, err = logsFetcher.RunQuery(ctx, query, queryString)
     if err != nil {
         return nil, fmt.Errorf("run logs insights query: %w", err)
     }
-
     var timeoutCount int
     if len(results) > 0 {
         val := results[0]["timeoutCount"]
@@ -35,19 +52,7 @@ func GetTimeoutRate(
             }
         }
     }
-    invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum", period)
-    if err != nil {
-        return nil, fmt.Errorf("fetch invocations metric: %w", err)
-    }
-    invocationsSum, err := sumMetricValues(invocationsResults)
-    if err != nil {
-        return nil, fmt.Errorf("parse invocations metric data: %w", err)
-    }
-    if invocationsSum == 0 {
-        return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
-    }
-
-    timeoutRate := float64(timeoutCount) / invocationsSum
+    timeoutRate := float64(timeoutCount) / float64(invocationsCount)
 
     return &sdktypes.TimeoutRateReturn{
         TimeoutRate:  timeoutRate,

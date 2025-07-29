@@ -7,7 +7,6 @@ import (
 	"math"
 	"slices"
 	"sort"
-	"strings"
 
 	"gonum.org/v1/gonum/stat"
 
@@ -100,26 +99,6 @@ func CalcSummaryStats(vals []float64) (summaryStatistics, error) {
 	}, nil
 }
 
-func  AddQualifierFilter(query, qualifier string) string {
-    if qualifier == "" || qualifier == "$LATEST" {
-        return query
-    }
-    
-    patterns := []string{
-        fmt.Sprintf("Version: %s", qualifier),
-        fmt.Sprintf("Alias: %s", qualifier),
-        qualifier, 
-    }
-    
-    var filters []string
-    for _, pattern := range patterns {
-        filters = append(filters, fmt.Sprintf("@message like /%s/", pattern))
-    }
-    
-    qualifierFilter := fmt.Sprintf("filter (%s)", strings.Join(filters, " or "))
-    return fmt.Sprintf("%s\n| %s", qualifierFilter, query)
-}
-
 func FunctionExists(ctx context.Context, client *lambda.Client, functionName string) (bool, error) {
     _, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
         FunctionName: aws.String(functionName),
@@ -137,7 +116,7 @@ func FunctionExists(ctx context.Context, client *lambda.Client, functionName str
 }
 
 func QualifierExists(ctx context.Context, client *lambda.Client, functionName, qualifier string) (bool, error) {
-    if qualifier == "" || qualifier == "$LATEST" {
+    if qualifier == "" {
         return true, nil
     }
     _, err := client.GetFunction(ctx, &lambda.GetFunctionInput{

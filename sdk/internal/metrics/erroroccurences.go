@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
 	logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
@@ -31,8 +32,10 @@ func GetErrorTypes(
     if invocationsSum == 0 {
         return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
     }
-	
-	results, err := logsFetcher.RunQuery(ctx, query, queries.LambdaErrorTypesQuery)
+
+    escapedQualifier := strings.ReplaceAll(query.Qualifier, "$", "\\$")
+    queryString := fmt.Sprintf(queries.LambdaErrorTypesQueryWithVersion, escapedQualifier)
+    results, err := logsFetcher.RunQuery(ctx, query, queryString)
 	if err != nil {
 		return nil, fmt.Errorf("run logs insights query: %w", err)
 	}

@@ -1,37 +1,37 @@
 package queries 
 
-const LambdaTimeoutQuery = `
-filter @message like /Status: timeout/
-| stats count() as timeoutCount
+const LambdaTimeoutQueryWithVersion = `
+filter @message like /Status: timeout/ and @logStream like /\[%s\]/
+| stats count_distinct(@requestId) as timeoutCount
 `
 
-const LambdaMemoryUtilizationQuery = `
+
+const LambdaMemoryUtilizationQueryWithVersion = `
 parse @message "Memory Size: * MB\tMax Memory Used: * MB" as memorySize, maxMemoryUsed 
-| filter ispresent(memorySize) and ispresent(maxMemoryUsed) 
+| filter ispresent(memorySize) and ispresent(maxMemoryUsed)  and @logStream like /\[%s\]/
 | display @timestamp, memorySize, maxMemoryUsed, maxMemoryUsed / memorySize as memoryUtilizationRatio
 `
 
-const LambdaColdStartRate = `
-fields @message
-| filter @message like /^REPORT/
-| parse @message /^REPORT.*Duration: (?<duration>[0-9\.]+) ms.*(Init Duration: (?<initDuration>[0-9\.]+) ms)?/
+const LambdaColdStartRateWithVersion = `
+filter @type = "REPORT" and @logStream like /\[%s\]/
+| parse @message /REPORT RequestId: (?<requestId>[a-f0-9-]+)/
 | stats 
-    count(*) as total_invocations,
-    count(initDuration) as cold_starts,
-    count(initDuration) * 100.0 / count(*) as coldStartRate
+    count_distinct(requestId) as totalInvocations,
+    sum(strcontains(@message, "Init Duration")) as coldStartLines
 `
 
-const LambdaErrorCount = `
-filter @message like /(?i)(ERROR)/
+const LambdaErrorCountWithVersion = `
+filter @message like /(?i)(ERROR)/ and @logStream like /\[%s\]/
 | stats count_distinct(@requestId) as errorCount
 `
 
-const LambdaUniqueRequests = `
-stats count_distinct(@requestId) as invocationsCount
+const LambdaUniqueRequestsWithVersion = `
+filter @logStream like /\[%s\]/
+| stats count_distinct(@requestId) as invocationsCount
 `
 
-const LambdaErrorTypesQuery = `
-filter @message =~ /(?i)\[ERROR\]/
+const LambdaErrorTypesQueryWithVersion = `
+filter @message =~ /(?i)\[ERROR\]/ and @logStream like /\[%s\]/
 | parse @message /\[ERROR\]\s+(?<error_type>[^ :]+)[ :]*(?<error_details>.*)?/
 | parse error_details /(?<specific_error>.*?)\s*when calling/
 | parse error_details /An error occurred \((?<aws_error_code>\w+)\)/

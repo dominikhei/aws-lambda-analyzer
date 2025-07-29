@@ -97,4 +97,4 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 - **Description**:  
   Extracted from logs containing `[ERROR]`, grouped by semantic category (e.g., timeout, dependency error).  
 - **Notes**:  
-  Unlike error rate, retries are counted as distinct errors.
+  Function timeouts do not count as errors
