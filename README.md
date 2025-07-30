@@ -37,7 +37,7 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 - [Throttle Rate](#throttle-rate)
 - [Error Rate](#error-rate)
 - [Error Types](#error-types)
-
+- [Duration Statistics](#duration-statistics)
 
 
 ## Detailed Metric Explanations
@@ -88,12 +88,10 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 
 ### Error Rate
 
-- **Source**: Logs Insights  
+- **Source**: Cloudwatch  
 - **Formula**:  
-  `sum(invocations with error) / sum(all invocations)`  
-- **Return Type**: `float32`  
-- **Notes**:  
-  Based on distinct `requestID`s where `[ERROR]` is present in logs.
+  `sum(errors) / sum(all invocations)`  
+- **Return Type**: `float32`
 
 ---
 
@@ -105,3 +103,20 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
   Extracted from logs containing `[ERROR]`, grouped by semantic category (e.g., timeout, dependency error).  
 - **Notes**:  
   Function timeouts do not count as errors
+---
+### Duration Statistics
+
+- **Source**: Logs Insights  
+- **Formula**:  
+  `Function execution duration from logs`  
+- **Return Type**: `float32`  
+- **Available Aggregations**:  
+  - Minimum Duration  
+  - Maximum Duration  
+  - Median Duration  
+  - Mean Duration  
+  - 95th Percentile Duration (requires ≥ 20 invocations)  
+  - 99th Percentile Duration (requires ≥ 100 invocations)  
+  - 95% Confidence Interval of Duration (requires ≥ 30 invocations)
+- **Notes**: Durations from Cloudwatch metrics where not used to avoid potential inaccuracies caused by aggregation depending on the period specified.
+---
