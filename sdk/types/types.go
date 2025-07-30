@@ -105,3 +105,18 @@ type ErrorTypesReturn struct {
 	StartTime    time.Time                `json:"startTime"`
 	EndTime      time.Time                `json:"endTime"`
 }
+
+// MemoryUsagePercentilesReturn holds various statistics on the maximum used memory of invocations
+type DurationStatisticsReturn struct{
+        MinDuration    float32 // Min duration of any run
+        MaxDuration    float32 // Max duration of any run
+        MedianDuration float32 // Median duration of any run
+		MeanDuration   float32 // Mean duration of any run
+        P95Duration    *float32 // Pointers as these values can be nil
+        P99Duration    *float32 // in case of too little samples
+		Conf95Duration *float32 // 95% confidence interval
+        FunctionName    string // Name of the lambda function
+        Qualifier       string // Qualifier of the lambda function
+        StartTime       time.Time // earliest considered invocation
+        EndTime         time.Time // latest considered invocation
+    }
