@@ -5,16 +5,11 @@ filter @message like /Status: timeout/ and @logStream like /\[%s\]/
 | stats count_distinct(@requestId) as timeoutCount
 `
 
+
 const LambdaMemoryUtilizationQueryWithVersion = `
 parse @message "Memory Size: * MB\tMax Memory Used: * MB" as memorySize, maxMemoryUsed 
 | filter ispresent(memorySize) and ispresent(maxMemoryUsed)  and @logStream like /\[%s\]/
 | display @timestamp, memorySize, maxMemoryUsed, maxMemoryUsed / memorySize as memoryUtilizationRatio
-`
-
-const LambdaDurationQueryWithVersion = `
-fields @timestamp, @message
-| parse @message "Duration: * ms" as durationMs
-| filter ispresent(durationMs) and @logStream like /\[%s\]/
 `
 
 const LambdaColdStartRateWithVersion = `

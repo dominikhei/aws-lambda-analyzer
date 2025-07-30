@@ -116,6 +116,9 @@ func FunctionExists(ctx context.Context, client *lambda.Client, functionName str
 }
 
 func QualifierExists(ctx context.Context, client *lambda.Client, functionName, qualifier string) (bool, error) {
+    if qualifier == "" {
+        return true, nil
+    }
     _, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
         FunctionName: aws.String(functionName),
         Qualifier:    aws.String(qualifier),
