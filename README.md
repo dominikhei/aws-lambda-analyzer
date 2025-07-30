@@ -2,13 +2,6 @@
 
 Serverless Statistics is a Go sdk that allows you to extract various statistics on your AWS lambda functions, that can be used for monitoring, performance analysis, improvements and automations. It provides a simple and clean interface and handles everything for you such that you can just focus on upstream logic and the data will be provided for you. For examples on how to use it refer to the examples section.
 
-## How are Versions and Aliases considered?
-If a version tag is present, only the invocations for that specific version will be considered. If no tag is set in the `qualifier` parameter, the `$LATEST` qualifier will be used by default.
-
-Note: When using `$LATEST`, if your function was updated during the specified time frame, invocations from both the old and new versions will be included in the results (since both were `$LATEST` at different times). Set your timeframe carefully to avoid mixing versions unintentionally.
-
-There currently is no possibility to distinguish between different aliases in the query results.
-
 ## Key Configurations
 
 ### Credentials
@@ -28,6 +21,13 @@ You specify which Lambda function to analyze by providing:
 
 If no qualifier is provided, the SDK will analyze all logs and metrics for the function across all versions.
 
+### How are Versions and Aliases considered?
+If a version tag is present, only the invocations for that specific version will be considered. If no tag is set in the `qualifier` parameter, the `$LATEST` qualifier will be used by default.
+
+Note: When using `$LATEST`, if your function was updated during the specified time frame, invocations from both the old and new versions will be included in the results (since both were `$LATEST` at different times). Set your timeframe carefully to avoid mixing versions unintentionally.
+
+There currently is no possibility to distinguish between different aliases in the query results.
+
 
 ## Available Metrics
 
@@ -37,6 +37,7 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 - [Throttle Rate](#throttle-rate)
 - [Error Rate](#error-rate)
 - [Error Types](#error-types)
+- [Duration Statistics](#duration-statistics)
 
 
 
@@ -65,7 +66,8 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
   - 95th Percentile Memory Usage Rate (requires ≥ 20 invocations)
   - 99th Percentile Memory Usage Rate (requires ≥ 100 invocations)
   - 95% Confidence Interval of Memory Usage Rate (requires ≥ 30 invocations)
-
+- **Notes**:
+  For each invoation, the peak memory is considered.
 ---
 
 ### Throttle Rate
@@ -105,3 +107,21 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
   Extracted from logs containing `[ERROR]`, grouped by semantic category (e.g., timeout, dependency error).
 - **Notes**:
   Function timeouts do not count as errors
+---
+### Duration Statistics
+
+- **Source**: Logs Insights
+- **Return Type**: `float32`
+- **Available Aggregations**:
+  - Minimum Duration
+  - Maximum Duration
+  - Median Duration
+  - Mean Duration
+  - 95th Percentile Duration (requires ≥ 20 invocations)
+  - 99th Percentile Duration (requires ≥ 100 invocations)
+  - 95% Confidence Interval of Duration (requires ≥ 30 invocations)
+---
+
+## Contributing
+
+If you find any bugs or have ideas for new functionality, please open an Issue or, even better, submit a Pull Request. All contributions are welcome!
