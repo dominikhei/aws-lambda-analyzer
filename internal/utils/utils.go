@@ -22,13 +22,13 @@ import (
 // summaryStatistics holds common descriptive statistics for a sample set of float64 values.
 // P95, P99, and ConfInt95 are pointers because they may be nil if sample size is insufficient.
 type summaryStatistics struct {
-	Mean      float32
-	Median    float32
-	P99       *float32
-	P95       *float32
-	ConfInt95 *float32
-	Min       float32
-	Max       float32
+	Mean      float64
+	Median    float64
+	P99       *float64
+	P95       *float64
+	ConfInt95 *float64
+	Min       float64
+	Max       float64
 }
 
 // ToLoadOptions converts ConfigOptions into AWS SDK config.LoadOptions functional options.
@@ -80,29 +80,29 @@ func CalcSummaryStats(vals []float64) (summaryStatistics, error) {
 	min := slices.Min(vals)
 	max := slices.Max(vals)
 
-	var p95, p99, confInt95 *float32
+	var p95, p99, confInt95 *float64
 
 	if len(vals) >= 20 {
-		val := float32(stat.Quantile(0.95, stat.Empirical, sorted, nil))
+		val := stat.Quantile(0.95, stat.Empirical, sorted, nil)
 		p95 = &val
 	}
 	if len(vals) >= 100 {
-		val := float32(stat.Quantile(0.99, stat.Empirical, sorted, nil))
+		val := stat.Quantile(0.99, stat.Empirical, sorted, nil)
 		p99 = &val
 	}
 	if len(vals) >= 30 {
-		val := float32(1.96 * stddev / math.Sqrt(float64(len(vals))))
+		val := 1.96 * stddev / math.Sqrt(float64(len(vals)))
 		confInt95 = &val
 	}
 
 	return summaryStatistics{
-		Mean:      float32(mean),
-		Median:    float32(median),
+		Mean:      mean,
+		Median:    median,
 		P95:       p95,
 		P99:       p99,
 		ConfInt95: confInt95,
-		Min:       float32(min),
-		Max:       float32(max),
+		Min:       min,
+		Max:       max,
 	}, nil
 }
 

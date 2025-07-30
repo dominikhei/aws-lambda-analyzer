@@ -52,14 +52,14 @@ func GetErrorTypes(
 		if !ok {
 			continue
 		}
-		count, err := strconv.ParseInt(countStr, 10, 64)
+		count, err := strconv.ParseInt(countStr, 10, 0)
 		if err != nil {
 			fmt.Printf("warn: could not parse error_count %q: %v\n", countStr, err)
 			continue
 		}
 		stats = append(stats, sdktypes.ErrorType{
 			ErrorCategory: category,
-			ErrorCount:    count,
+			ErrorCount:    int(count),
 		})
 	}
 

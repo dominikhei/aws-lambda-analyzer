@@ -55,7 +55,7 @@ type TimeoutRateReturn struct {
 
 // ColdStartRateReturn is the return of GetColdStartRate.
 type ColdStartRateReturn struct {
-	ColdStartRate float32   // Timedout Invocations / Total
+	ColdStartRate float64   // Timedout Invocations / Total
 	FunctionName  string    // Name of the function
 	Qualifier     string    // Qualifier of the function
 	StartTime     time.Time // Start of the query interval (UTC)
@@ -66,13 +66,13 @@ type ColdStartRateReturn struct {
 // P95UsageRate, P99UsageRate and Conf95UsageRate can be nil if not enough values are present in
 // the specified inteval, to calculate them robustly.
 type MemoryUsagePercentilesReturn struct {
-	MinUsageRate    float32  // Min (max) Memory usage of any run
-	MaxUsageRate    float32  // Max (max) Memory usage of any run
-	MedianUsageRate float32  // Median (max) Memory usage of any run
-	MeanUsageRate   float32  // Mean (max) Memory usage of any run
-	P95UsageRate    *float32 // 95th percentile
-	P99UsageRate    *float32 // 99th percentile
-	Conf95UsageRate *float32 // 95% confidence interval
+	MinUsageRate    float64  // Min (max) Memory usage of any run
+	MaxUsageRate    float64  // Max (max) Memory usage of any run
+	MedianUsageRate float64  // Median (max) Memory usage of any run
+	MeanUsageRate   float64  // Mean (max) Memory usage of any run
+	P95UsageRate    *float64 // 95th percentile
+	P99UsageRate    *float64 // 99th percentile
+	Conf95UsageRate *float64 // 95% confidence interval
 	FunctionName    string
 	Qualifier       string
 	StartTime       time.Time
@@ -89,7 +89,7 @@ type BaseStatisticsReturn struct {
 	Runtime                string
 	LastModified           string
 	ProvisionedConcurrency int
-	NumInvocations         int64
+	NumInvocations         int
 	EnvironmentVariables   map[string]string
 	StartTime              time.Time
 	EndTime                time.Time
@@ -101,13 +101,13 @@ type ErrorRateReturn struct {
 	Qualifier    string
 	StartTime    time.Time
 	EndTime      time.Time
-	ErrorRate    float32
+	ErrorRate    float64
 }
 
 // ErrorType represents a categorized error encountered by an AWS Lambda function.
 type ErrorType struct {
 	ErrorCategory string // ErrorCategory is a semantic extraction what follows after [ERROR] in a log.
-	ErrorCount    int64
+	ErrorCount    int
 }
 
 // ErrorTypesReturn is the return of GetErrorCategoryStatistics.
@@ -124,13 +124,13 @@ type ErrorTypesReturn struct {
 // P95Duration, P99Duration and Conf95Duration can be nil if not enough values are present in
 // the specified inteval, to calculate them robustly.
 type DurationStatisticsReturn struct {
-	MinDuration    float32  // Min duration of any run
-	MaxDuration    float32  // Max duration of any run
-	MedianDuration float32  // Median duration of any run
-	MeanDuration   float32  // Mean duration of any run
-	P95Duration    *float32 // 95th percentile duration
-	P99Duration    *float32 // 99th percentile duration
-	Conf95Duration *float32 // 95% confidence interval of the durations
+	MinDuration    float64  // Min duration of any run
+	MaxDuration    float64  // Max duration of any run
+	MedianDuration float64  // Median duration of any run
+	MeanDuration   float64  // Mean duration of any run
+	P95Duration    *float64 // 95th percentile duration
+	P99Duration    *float64 // 99th percentile duration
+	Conf95Duration *float64 // 95% confidence interval of the durations
 	FunctionName   string
 	Qualifier      string
 	StartTime      time.Time

@@ -46,15 +46,15 @@ func GetColdStartRate(
 	coldStr := results[0]["coldStartLines"]
 
 	if totalStr != "" && coldStr != "" {
-		total, err1 := strconv.ParseFloat(totalStr, 32)
-		cold, err2 := strconv.ParseFloat(coldStr, 32)
+		total, err1 := strconv.ParseFloat(totalStr, 64)
+		cold, err2 := strconv.ParseFloat(coldStr, 64)
 		if err1 != nil || err2 != nil || total == 0 {
 			return nil, fmt.Errorf("invalid data from logs: total=%v, cold=%v", totalStr, coldStr)
 		}
 		coldStartRate = cold / total
 	}
 	return &sdktypes.ColdStartRateReturn{
-		ColdStartRate: float32(coldStartRate),
+		ColdStartRate: coldStartRate,
 		FunctionName:  query.FunctionName,
 		Qualifier:     query.Qualifier,
 		StartTime:     query.StartTime,

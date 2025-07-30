@@ -46,6 +46,6 @@ func GetErrorRate(
 		Qualifier:    query.Qualifier,
 		StartTime:    query.StartTime,
 		EndTime:      query.EndTime,
-		ErrorRate:    float32(errorRate),
+		ErrorRate:    errorRate,
 	}, nil
 }
