@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
 	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
 	logsinsightsfetcher "github.com/dominikhei/serverless-statistics/internal/logsinsights"
 	"github.com/dominikhei/serverless-statistics/internal/queries"
@@ -21,6 +22,18 @@ func GetTimeoutRate(
 	logsFetcher *logsinsightsfetcher.Fetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.TimeoutRateReturn, error) {
+
+	invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
+	if err != nil {
+		return nil, fmt.Errorf("fetch invocations metric: %w", err)
+	}
+	invocationsSum, err := sumMetricValues(invocationsResults)
+	if err != nil {
+		return nil, fmt.Errorf("parse invocations metric data: %w", err)
+	}
+	if invocationsSum == 0 {
+		return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
+	}
 
 	escapedQualifier := strings.ReplaceAll(query.Qualifier, "$", "\\$")
 	queryString := fmt.Sprintf(queries.LambdaUniqueRequestsWithVersion, escapedQualifier)

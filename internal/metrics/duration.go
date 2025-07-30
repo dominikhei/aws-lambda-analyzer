@@ -27,6 +27,7 @@ func GetDurationStatistics(
 	cwFetcher *cloudwatchfetcher.Fetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.DurationStatisticsReturn, error) {
+
 	invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)

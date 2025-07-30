@@ -16,16 +16,15 @@ func GetErrorRate(
 	cwFetcher *cloudwatchfetcher.Fetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.ErrorRateReturn, error) {
+
 	invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
-
 	invocationsSum, err := sumMetricValues(invocationsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}
-
 	if invocationsSum == 0 {
 		return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
 	}

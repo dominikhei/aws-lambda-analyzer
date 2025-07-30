@@ -18,18 +18,10 @@ func GetThrottleRate(
 	f *cloudwatchfetcher.Fetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.ThrottleRateReturn, error) {
-	throttlesResults, err := f.FetchMetric(ctx, query, "Throttles", "Sum")
-	if err != nil {
-		return nil, fmt.Errorf("fetch throttles metric: %w", err)
-	}
+
 	invocationsResults, err := f.FetchMetric(ctx, query, "Invocations", "Sum")
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
-	}
-
-	throttlesSum, err := sumMetricValues(throttlesResults)
-	if err != nil {
-		return nil, fmt.Errorf("parse throttles metric data: %w", err)
 	}
 	invocationsSum, err := sumMetricValues(invocationsResults)
 	if err != nil {
@@ -38,6 +30,16 @@ func GetThrottleRate(
 	if invocationsSum == 0 {
 		return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
 	}
+
+	throttlesResults, err := f.FetchMetric(ctx, query, "Throttles", "Sum")
+	if err != nil {
+		return nil, fmt.Errorf("fetch throttles metric: %w", err)
+	}
+	throttlesSum, err := sumMetricValues(throttlesResults)
+	if err != nil {
+		return nil, fmt.Errorf("parse throttles metric data: %w", err)
+	}
+
 	throttleRate := throttlesSum / invocationsSum
 	result := &sdktypes.ThrottleRateReturn{
 		ThrottleRate: throttleRate,
