@@ -27,7 +27,7 @@ func New(clients *sdktypes.AWSClients) *Fetcher {
 //
 // Parameters:
 //   - ctx: context for cancellation and timeout.
-//   - fq: sdktypes.FunctionQuery containing the Lambda FunctionName, Qualifier (unused here),
+//   - fq: sdktypes.FunctionQuery containing the Lambda FunctionName, Qualifier (unused here, as it is plugged into the query before),
 //     StartTime, and EndTime defining the query time window.
 //   - queryString: the Logs Insights query string to execute.
 //

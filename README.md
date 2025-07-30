@@ -6,6 +6,14 @@ Serverless Statistics is a Go sdk that allows you to extract various statistics 
 
 ### Credentials
 The SDK uses the standard AWS credentials chain for authentication and will look for credentials in that order. The excemption from this is, if you specify `AccessKeyID` and `SecretAccessKey` in [ConfigOptions](./sdk/types/types.go#L42-L47) in the application code.
+```go
+opts := types.ConfigOptions{
+	AccessKeyID:  "example-key-id",
+  SecretAccessKey: "example-secret-key",
+  Region: "eu-central-1",
+}
+stats := serverlessstatistics.New(ctx, opts)
+```
 
 ### Region Configuration
 When creating your client, you can specify the AWS region and other options via [ConfigOptions](./sdk/types/types.go#L42-L47). The client will operate in either:
@@ -13,16 +21,23 @@ When creating your client, you can specify the AWS region and other options via 
 - The default region from your AWS credentials/profile
 - A specific region you specify in the configuration
 
+```go
+opts := types.ConfigOptions{
+	Region:  "eu-central-1",
+}
+stats := serverlessstatistics.New(ctx, opts)
+```
+
 ### Function Targeting
 You specify which Lambda function to analyze by providing:
 
 - __Function Name__ - The name of your Lambda function
 - __Qualifier__ (optional) - A specific version number. Defaults to `$LATEST`.
 
-If no qualifier is provided, the SDK will analyze all logs and metrics for the function across all versions.
+If no qualifier is provided, the SDK will analyze the logs and metrics for the `$LATEST` version.
 
 ### How are Versions and Aliases considered?
-If a version tag is present, only the invocations for that specific version will be considered. If no tag is set in the `qualifier` parameter, the `$LATEST` qualifier will be used by default.
+If a version tag is present, only the invocations for that specific version will be considered. If no tag is set in the `Qualifier` parameter, the `$LATEST` qualifier will be used by default.
 
 Note: When using `$LATEST`, if your function was updated during the specified time frame, invocations from both the old and new versions will be included in the results (since both were `$LATEST` at different times). Set your timeframe carefully to avoid mixing versions unintentionally.
 
@@ -121,6 +136,54 @@ There currently is no possibility to distinguish between different aliases in th
   - 99th Percentile Duration (requires ≥ 100 invocations)
   - 95% Confidence Interval of Duration (requires ≥ 30 invocations)
 ---
+
+## Examples
+
+This section aims to provide two short example on how to use the sdk. For the available methods and metrics refer to [Available Metrics](#available-metrics) and the detailed section on each metric below. You simply need to pass in the function name, qualifier (version), starttime and endtime into a metric function. The return will be a custom struct exposed in [types](./types/types.go). There you can also see how to access the relevant values and which ones are available.
+
+### Initialization:
+
+```go
+import (
+	serverlessstatistics "github.com/dominikhei/serverless-statistics"
+	sdktypes "github.com/dominikhei/serverless-statistics/types"
+)
+
+ctx := context.Background()
+opts := sdktypes.ConfigOptions{
+	Region:  "eu-central-1",
+	Profile: "default",
+}
+stats := serverlessstatistics.New(ctx, opts)
+```
+
+### Memory Usage Statistics:
+
+```go
+stats := serverlessstatistics.New(ctx, opts)
+functionName := "my-lambda-function"
+endTime := time.Now()
+startTime := endTime.Add(-24 * time.Hour)
+
+errorStats, err := stats.GetErrorCategoryStatistics(ctx, functionName, qualifier, startTime, endTime)
+if err != nil {
+	fmt.Printf("%v", err)
+	return
+}
+if len(errorStats.Errors) == 0 {
+  fmt.Println("✅ No errors found in the last 24 hours")
+} else {
+  fmt.Printf("Error Analysis for function '%s' (%s)\n", errorStats.FunctionName, errorStats.Qualifier)
+  fmt.Printf("Analysis period: %s to %s\n\n",
+    errorStats.StartTime.Format("2006-01-02 15:04:05"),
+    errorStats.EndTime.Format("2006-01-02 15:04:05"))
+
+  fmt.Printf("Found %d error categories:\n", len(errorStats.Errors))
+  for _, errorType := range errorStats.Errors {
+    fmt.Printf("  • %-25s: %d occurrences\n", errorType.ErrorCategory, errorType.ErrorCount)
+    }
+}
+```
 
 ## Contributing
 
