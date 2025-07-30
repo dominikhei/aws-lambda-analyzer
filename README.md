@@ -71,7 +71,7 @@ There currently is no possibility to distinguish between different aliases in th
 
 - **Source**: Logs Insights
 - **Formula**:
-  `Used Memory / Allocated Memory`
+  `Maximum Used Memory / Allocated Memory`
 - **Return Type**: `float32`
 - **Available Aggregations**:
   - Minimum Memory Usage Rate
