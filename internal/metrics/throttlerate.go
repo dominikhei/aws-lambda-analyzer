@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
-	sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
-	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
-	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
+	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
 func GetThrottleRate(

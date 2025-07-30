@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
-	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
-	logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
-	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/queries"
-	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/utils"
-	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
+	logsinsightsfetcher "github.com/dominikhei/serverless-statistics/internal/logsinsights"
+	"github.com/dominikhei/serverless-statistics/internal/queries"
+	"github.com/dominikhei/serverless-statistics/internal/utils"
+	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
 // This function does not use the duration metric from cloudwatch, as

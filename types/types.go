@@ -9,6 +9,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/xray"
 )
 
+type ConfigOptions struct {
+	Region          string
+	Profile         string
+	AccessKeyID     string
+	SecretAccessKey string
+}
+
 // FunctionQuery defines the parameters to query metrics for a specific AWS Lambda function.
 type FunctionQuery struct {
 	FunctionName string    // The name of the Lambda function, e.g., "my-function"
@@ -39,13 +46,6 @@ type TimeoutRateReturn struct {
 	Qualifier    string
 	StartTime    time.Time // Start of the query interval (UTC)
 	EndTime      time.Time // End of the query interval (UTC)
-}
-
-type ConfigOptions struct {
-	Region          string
-	Profile         string
-	AccessKeyID     string
-	SecretAccessKey string
 }
 
 type ColdStartRateReturn struct {

@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
-	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
 type Fetcher struct {

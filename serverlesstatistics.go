@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
-	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/clientmanager"
-	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
-	logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
-	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/metrics"
-	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/utils"
-	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	"github.com/dominikhei/serverless-statistics/internal/clientmanager"
+	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
+	logsinsightsfetcher "github.com/dominikhei/serverless-statistics/internal/logsinsights"
+	"github.com/dominikhei/serverless-statistics/internal/metrics"
+	"github.com/dominikhei/serverless-statistics/internal/utils"
+	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
 type ServerlessStats struct {

@@ -15,7 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
-	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+
+	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
 type summaryStatistics struct {

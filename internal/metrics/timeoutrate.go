@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
-	logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
-	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/queries"
-	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
+	logsinsightsfetcher "github.com/dominikhei/serverless-statistics/internal/logsinsights"
+	"github.com/dominikhei/serverless-statistics/internal/queries"
+	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
 func GetTimeoutRate(

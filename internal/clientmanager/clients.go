@@ -10,11 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/xray"
-	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/utils"
-	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	"github.com/dominikhei/serverless-statistics/internal/utils"
+	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
-// Example usage inside NewAWSClients:
 func NewAWSClients(ctx context.Context, opts sdktypes.ConfigOptions) (*sdktypes.AWSClients, error) {
 	loadOpts, err := utils.ToLoadOptions(opts)
 	if err != nil {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dominikhei/aws-lambda-analyzer/sdk/serverlessstatistics"
-	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	serverlessstatistics "github.com/dominikhei/serverless-statistics"
+	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
 func main() {
