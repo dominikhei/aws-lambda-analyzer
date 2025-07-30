@@ -249,3 +249,39 @@ func (a *ServerlessStats) GetErrorCategoryStatistics(
 
     return metrics.GetErrorTypes(ctx, a.logsFetcher, a.cloudwatchFetcher, query, period)
 }
+
+func (a *ServerlessStats) GetDurationStatistics(
+    ctx context.Context,
+    functionName string,
+    qualifier string,
+    startTime, endTime time.Time,
+    period int32,
+) (*sdktypes.DurationStatisticsReturn, error) {
+    if qualifier == "" {
+        qualifier = "$LATEST"
+    }
+    query := sdktypes.FunctionQuery{
+        FunctionName: functionName,
+        Qualifier:    qualifier,
+        StartTime:    startTime,
+        EndTime:      endTime,
+    }
+
+    exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
+    if err != nil {
+        return nil, fmt.Errorf("checking if function exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("lambda function %q does not exist", functionName)
+    }
+
+    exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+    if err != nil {
+        return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+    }
+    if !exists {
+        return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+    }
+
+    return metrics.GetDurationStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, query, period)
+}
