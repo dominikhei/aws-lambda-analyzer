@@ -1,4 +1,4 @@
-<img width="1200" height="500" alt="Serverless Statistics Header" src="https://github.com/user-attachments/assets/2fd91fe3-74c0-4b39-b60a-f56dfa0e57c4" />
+<img width="960" height="400" alt="Serverless Statistics Header" src="https://github.com/user-attachments/assets/a2a24da4-cf2e-42f0-ac00-17efb6e3497c" />
 
 Serverless Statistics is a Go sdk that allows you to extract various statistics on your AWS lambda functions, that can be used for monitoring, performance analysis, improvements and automations. It provides a simple and clean interface and handles everything for you such that you can just focus on upstream logic and the data will be provided for you. For examples on how to use it refer to the examples section.
 
