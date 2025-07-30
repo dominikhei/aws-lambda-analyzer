@@ -14,6 +14,8 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// GetMaxMemoryUsageStatistics calculates statistics on the maximum used memory
+// of an AWS Lambda functions invocations over a specified time range and qualifier (version).
 func GetMaxMemoryUsageStatistics(
 	ctx context.Context,
 	logsFetcher *logsinsightsfetcher.Fetcher,

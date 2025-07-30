@@ -10,10 +10,15 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// Fetcher is a wrapper around the AWS CloudWatch client tailored to fetch
+// Lambda metrics efficiently using predefined dimensions and query parameters.
 type Fetcher struct {
 	client *cloudwatch.Client
 }
 
+// period is a default for the period parameter of Cloudwatch Metrics.
+// It is set as a default and not-changeable by the user as the functionality
+// does not require aggregation of metrics over sub-periods.
 const period int32 = 86400
 
 func New(clients *sdktypes.AWSClients) *Fetcher {
@@ -22,6 +27,18 @@ func New(clients *sdktypes.AWSClients) *Fetcher {
 	}
 }
 
+// FetchMetric fetches metric data for a given Lambda function within the specified
+// time range.
+//
+// Parameters:
+//   - ctx: context for cancellation and deadlines.
+//   - query: FunctionQuery struct containing FunctionName, Qualifier, StartTime,
+//     and EndTime for the metric fetch.
+//   - metricName: the name of the Lambda metric to query (e.g., "Invocations").
+//   - stat: the statistic to retrieve (e.g., "Sum", "Average").
+//
+// Returns a slice of MetricDataResult structs containing the queried metric data,
+// or an error if the request fails.
 func (f *Fetcher) FetchMetric(
 	ctx context.Context,
 	query sdktypes.FunctionQuery,
@@ -36,9 +53,11 @@ func (f *Fetcher) FetchMetric(
 	}
 
 	var resourceValue string
+	// In this case the version will not be part of the resource only the function name.
 	if query.Qualifier == "$LATEST" {
 		resourceValue = query.FunctionName
 	} else {
+		// For any other verison tag, the Resource dimension will be name:tag.
 		resourceValue = fmt.Sprintf("%s:%s", query.FunctionName, query.Qualifier)
 	}
 

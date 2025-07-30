@@ -19,16 +19,20 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// summaryStatistics holds common descriptive statistics for a sample set of float64 values.
+// P95, P99, and ConfInt95 are pointers because they may be nil if sample size is insufficient.
 type summaryStatistics struct {
 	Mean      float32
 	Median    float32
-	P99       *float32 //Pointer as these values are nilable if the sample size is too small
+	P99       *float32
 	P95       *float32
 	ConfInt95 *float32
 	Min       float32
 	Max       float32
 }
 
+// ToLoadOptions converts ConfigOptions into AWS SDK config.LoadOptions functional options.
+// This abstraction should simplify configuration for users.
 func ToLoadOptions(opts sdktypes.ConfigOptions) ([]func(*config.LoadOptions) error, error) {
 	var loadOptions []func(*config.LoadOptions) error
 
@@ -59,6 +63,8 @@ func ToLoadOptions(opts sdktypes.ConfigOptions) ([]func(*config.LoadOptions) err
 	return loadOptions, nil
 }
 
+// CalcSummaryStats calculates descriptive statistics (mean, median, percentiles, confidence interval, min, max)
+// from a slice of float64 values. Returns an error if the input slice is empty.
 func CalcSummaryStats(vals []float64) (summaryStatistics, error) {
 	if len(vals) == 0 {
 		return summaryStatistics{}, errors.New("empty slice")
@@ -100,6 +106,8 @@ func CalcSummaryStats(vals []float64) (summaryStatistics, error) {
 	}, nil
 }
 
+// FunctionExists checks if an AWS Lambda function with the given name exists in the AWS account.
+// Returns true if the function exists, false if not found, or an error on other failures.
 func FunctionExists(ctx context.Context, client *lambda.Client, functionName string) (bool, error) {
 	_, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
 		FunctionName: aws.String(functionName),
@@ -116,6 +124,8 @@ func FunctionExists(ctx context.Context, client *lambda.Client, functionName str
 	return true, nil
 }
 
+// QualifierExists checks if a specific qualifier (version or alias) exists for an AWS Lambda function.
+// Returns true if the qualifier exists, false if not found, or an error on other failures.
 func QualifierExists(ctx context.Context, client *lambda.Client, functionName, qualifier string) (bool, error) {
 	_, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
 		FunctionName: aws.String(functionName),

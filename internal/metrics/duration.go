@@ -17,6 +17,10 @@ import (
 // This function does not use the duration metric from cloudwatch, as
 // there is a risk of aggregating durations depending on the period.
 
+// GetDurationStatistics calculates duration statistics of an AWS Lambda function
+// over a specified time range and qualifier (version).
+// It does not use the duration metric from cloudwatch, as
+// there is a risk of aggregating durations depending on the period
 func GetDurationStatistics(
 	ctx context.Context,
 	logsFetcher *logsinsightsfetcher.Fetcher,

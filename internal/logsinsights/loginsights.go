@@ -12,6 +12,8 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// Fetcher is a wrapper around the AWS CloudWatch Logs client tailored for executing
+// Logs Insights queries against Lambda function log groups.
 type Fetcher struct {
 	client *cloudwatchlogs.Client
 }
@@ -20,6 +22,23 @@ func New(clients *sdktypes.AWSClients) *Fetcher {
 	return &Fetcher{client: clients.LogsClient}
 }
 
+// RunQuery executes a Logs Insights query on the log group of the specified Lambda function,
+// scoped to the time range in the FunctionQuery.
+//
+// Parameters:
+//   - ctx: context for cancellation and timeout.
+//   - fq: sdktypes.FunctionQuery containing the Lambda FunctionName, Qualifier (unused here),
+//     StartTime, and EndTime defining the query time window.
+//   - queryString: the Logs Insights query string to execute.
+//
+// Returns:
+//   - A slice of maps representing the query results, where each map corresponds to a row,
+//     mapping field names to string values.
+//   - An error if the query fails to start, returns no query ID, or fails/cancels during execution.
+//
+// Behavior:
+//   - The function constructs the log group name using the Lambda function name in the standard
+//     `/aws/lambda/{functionName}` format.
 func (f *Fetcher) RunQuery(ctx context.Context, fq sdktypes.FunctionQuery, queryString string) ([]map[string]string, error) {
 	logGroup := fmt.Sprintf("/aws/lambda/%s", fq.FunctionName)
 
@@ -36,11 +55,14 @@ func (f *Fetcher) RunQuery(ctx context.Context, fq sdktypes.FunctionQuery, query
 	if startResp.QueryId == nil {
 		return nil, errors.New("no query ID returned")
 	}
-
 	queryID := startResp.QueryId
+	// There is a 10s max duration to a query before it cancels
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
 	for {
-		time.Sleep(2 * time.Second)
+		// The status is polled in a loop every 500MS.
+		time.Sleep(500 * time.Millisecond)
 		resp, err := f.client.GetQueryResults(ctx, &cloudwatchlogs.GetQueryResultsInput{
 			QueryId: queryID,
 		})
@@ -61,6 +83,12 @@ func (f *Fetcher) RunQuery(ctx context.Context, fq sdktypes.FunctionQuery, query
 			return results, nil
 		case cloudwatchlogstypes.QueryStatusFailed, cloudwatchlogstypes.QueryStatusCancelled:
 			return nil, fmt.Errorf("query failed with status: %s", resp.Status)
+		}
+		// Check if the 10s timeout is already exceeded.
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("query polling timed out")
+		default:
 		}
 	}
 }

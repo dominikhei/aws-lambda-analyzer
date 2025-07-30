@@ -14,6 +14,7 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// NewAWSClients will be called by serverlessstatistics.New() internally to set up connections.
 func NewAWSClients(ctx context.Context, opts sdktypes.ConfigOptions) (*sdktypes.AWSClients, error) {
 	loadOpts, err := utils.ToLoadOptions(opts)
 	if err != nil {

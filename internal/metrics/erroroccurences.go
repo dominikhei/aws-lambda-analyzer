@@ -13,6 +13,9 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// GetErrorTypes counts the different errors that occur over a specified time range and qualifier (version).
+// It uses a regex to search for the error in an [ERROR] line in logs and groups them
+// based on semantics.
 func GetErrorTypes(
 	ctx context.Context,
 	logsFetcher *logsinsightsfetcher.Fetcher,

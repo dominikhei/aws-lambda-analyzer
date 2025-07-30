@@ -22,7 +22,7 @@ func main() {
 	layout := "2006-01-02 15:04:05"
 	startTime, _ := time.Parse(layout, "2025-07-17 01:00:00")
 	endTime := time.Now()
-	rate, err := a.GetTimeoutRate(ctx, functionName, qualifier, startTime, endTime)
+	rate, err := a.GetErrorCategoryStatistics(ctx, functionName, qualifier, startTime, endTime)
 	if err != nil {
 		fmt.Printf("%v", err)
 		return

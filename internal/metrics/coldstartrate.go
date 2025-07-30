@@ -13,6 +13,9 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// GetColdStartRate calculates the cold start rate of an AWS Lambda function
+// over a specified time range and qualifier (version).
+// The cold start rate is computed as cold starts divided by total invocations.
 func GetColdStartRate(
 	ctx context.Context,
 	logsFetcher *logsinsightsfetcher.Fetcher,

@@ -12,6 +12,9 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// GetTimeoutRate calculates the timeout rate of an AWS Lambda function
+// over a specified time range and qualifier (version).
+// The timeout rate is computed as timed-out invocations divided by total invocations.
 func GetTimeoutRate(
 	ctx context.Context,
 	cwFetcher *cloudwatchfetcher.Fetcher,

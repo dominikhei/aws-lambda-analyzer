@@ -10,6 +10,9 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// GetThrottleRate calculates the throttle rate of an AWS Lambda function
+// over a specified time range and qualifier (version).
+// The throttle rate is computed as throttled invocations divided by total invocations.
 func GetThrottleRate(
 	ctx context.Context,
 	f *cloudwatchfetcher.Fetcher,

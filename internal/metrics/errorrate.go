@@ -9,6 +9,8 @@ import (
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
+// GetErrorRate calculates the ratio of errors and total invoations
+// of an AWS Lambda function over a specified time range and qualifier (version).
 func GetErrorRate(
 	ctx context.Context,
 	cwFetcher *cloudwatchfetcher.Fetcher,
