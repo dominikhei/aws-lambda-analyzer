@@ -1,4 +1,4 @@
-// Package clientmanager provides a centralized clientmanager which handles the 
+// Package clientmanager provides a centralized clientmanager which handles the
 // various aws clients required for this sdk.
 package clientmanager
 
@@ -9,9 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
-    "github.com/aws/aws-sdk-go-v2/service/xray"
-	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
+	"github.com/aws/aws-sdk-go-v2/service/xray"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/utils"
+	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
 )
 
 // Example usage inside NewAWSClients:

@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
+	sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
 	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
 	logsinsightsfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/logsinsights"
 	"github.com/dominikhei/aws-lambda-analyzer/sdk/internal/queries"
 	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
-	sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
 )
 
 func GetErrorTypes(
@@ -18,24 +18,23 @@ func GetErrorTypes(
 	logsFetcher *logsinsightsfetcher.Fetcher,
 	cwFetcher *cloudwatchfetcher.Fetcher,
 	query sdktypes.FunctionQuery,
-	period int32,
 ) (*sdktypes.ErrorTypesReturn, error) {
 
-    invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum", period)
-    if err != nil {
-        return nil, fmt.Errorf("fetch invocations metric: %w", err)
-    }
-    invocationsSum, err := sumMetricValues(invocationsResults)
-    if err != nil {
-        return nil, fmt.Errorf("parse invocations metric data: %w", err)
-    }
-    if invocationsSum == 0 {
-        return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
-    }
+	invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
+	if err != nil {
+		return nil, fmt.Errorf("fetch invocations metric: %w", err)
+	}
+	invocationsSum, err := sumMetricValues(invocationsResults)
+	if err != nil {
+		return nil, fmt.Errorf("parse invocations metric data: %w", err)
+	}
+	if invocationsSum == 0 {
+		return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
+	}
 
-    escapedQualifier := strings.ReplaceAll(query.Qualifier, "$", "\\$")
-    queryString := fmt.Sprintf(queries.LambdaErrorTypesQueryWithVersion, escapedQualifier)
-    results, err := logsFetcher.RunQuery(ctx, query, queryString)
+	escapedQualifier := strings.ReplaceAll(query.Qualifier, "$", "\\$")
+	queryString := fmt.Sprintf(queries.LambdaErrorTypesQueryWithVersion, escapedQualifier)
+	results, err := logsFetcher.RunQuery(ctx, query, queryString)
 	if err != nil {
 		return nil, fmt.Errorf("run logs insights query: %w", err)
 	}

@@ -1,19 +1,21 @@
-package types 
+package types
 
-import  (
+import (
 	"time"
+
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
-    "github.com/aws/aws-sdk-go-v2/service/xray"
+	"github.com/aws/aws-sdk-go-v2/service/xray"
 )
+
 // FunctionQuery defines the parameters to query metrics for a specific AWS Lambda function.
 type FunctionQuery struct {
-    FunctionName string    // The name of the Lambda function, e.g., "my-function"
-    Region       string    // AWS region, e.g., "us-east-1"
-    Qualifier    string    // Lambda version or alias, e.g., "$LATEST", "1", or "prod"
-    StartTime    time.Time // Start of the query interval (UTC)
-    EndTime      time.Time // End of the query interval (UTC)
+	FunctionName string    // The name of the Lambda function, e.g., "my-function"
+	Region       string    // AWS region, e.g., "us-east-1"
+	Qualifier    string    // Lambda version or alias, e.g., "$LATEST", "1", or "prod"
+	StartTime    time.Time // Start of the query interval (UTC)
+	EndTime      time.Time // End of the query interval (UTC)
 }
 
 type AWSClients struct {
@@ -26,17 +28,17 @@ type AWSClients struct {
 type ThrottleRateReturn struct {
 	ThrottleRate float64
 	FunctionName string
-	Qualifier string
-    StartTime    time.Time // Start of the query interval (UTC)
-    EndTime      time.Time // End of the query interval (UTC)	
+	Qualifier    string
+	StartTime    time.Time // Start of the query interval (UTC)
+	EndTime      time.Time // End of the query interval (UTC)
 }
 
 type TimeoutRateReturn struct {
-	TimeoutRate float64
+	TimeoutRate  float64
 	FunctionName string
-	Qualifier string
-    StartTime    time.Time // Start of the query interval (UTC)
-    EndTime      time.Time // End of the query interval (UTC)	
+	Qualifier    string
+	StartTime    time.Time // Start of the query interval (UTC)
+	EndTime      time.Time // End of the query interval (UTC)
 }
 
 type ConfigOptions struct {
@@ -47,50 +49,50 @@ type ConfigOptions struct {
 }
 
 type ColdStartRateReturn struct {
-	ColdStartRate float32 // Timedout Invocations / Total
-	FunctionName string // Name of the function
-	Qualifier string // Qualifier of the function
-    StartTime    time.Time // Start of the query interval (UTC)
-    EndTime      time.Time // End of the query interval (UTC)	
+	ColdStartRate float32   // Timedout Invocations / Total
+	FunctionName  string    // Name of the function
+	Qualifier     string    // Qualifier of the function
+	StartTime     time.Time // Start of the query interval (UTC)
+	EndTime       time.Time // End of the query interval (UTC)
 }
 
 // MemoryUsagePercentilesReturn holds various statistics on the maximum used memory of invocations
-type MemoryUsagePercentilesReturn struct{
-        MinUsageRate    float32 // Min (max) Memory usage of any run
-        MaxUsageRate    float32 // Max (max) Memory usage of any run
-        MedianUsageRate float32 // Median (max) Memory usage of any run
-		MeanUsageRate   float32 // Mean (max) Memory usage of any run
-        P95UsageRate    *float32 // Pointers as these values can be nil
-        P99UsageRate    *float32 // in case of too little samples
-		Conf95UsageRate *float32 // 95% confidence interval
-        FunctionName    string // Name of the lambda function
-        Qualifier       string // Qualifier of the lambda function
-        StartTime       time.Time // earliest considered invocation
-        EndTime         time.Time // latest considered invocation
-    }
+type MemoryUsagePercentilesReturn struct {
+	MinUsageRate    float32   // Min (max) Memory usage of any run
+	MaxUsageRate    float32   // Max (max) Memory usage of any run
+	MedianUsageRate float32   // Median (max) Memory usage of any run
+	MeanUsageRate   float32   // Mean (max) Memory usage of any run
+	P95UsageRate    *float32  // Pointers as these values can be nil
+	P99UsageRate    *float32  // in case of too little samples
+	Conf95UsageRate *float32  // 95% confidence interval
+	FunctionName    string    // Name of the lambda function
+	Qualifier       string    // Qualifier of the lambda function
+	StartTime       time.Time // earliest considered invocation
+	EndTime         time.Time // latest considered invocation
+}
 
 // BaseStatistics contains general statistics about the lambda function
 type BaseStatisticsReturn struct {
-    FunctionARN           string
-	FunctionName		  string
-    Qualifier             string
-    MemorySizeMB          int
-    TimeoutSeconds        int
-    Runtime               string
-    LastModified          string
-    ProvisionedConcurrency int
-    NumInvocations        int64
-    EnvironmentVariables  map[string]string
-    StartTime    time.Time
-    EndTime      time.Time
+	FunctionARN            string
+	FunctionName           string
+	Qualifier              string
+	MemorySizeMB           int
+	TimeoutSeconds         int
+	Runtime                string
+	LastModified           string
+	ProvisionedConcurrency int
+	NumInvocations         int64
+	EnvironmentVariables   map[string]string
+	StartTime              time.Time
+	EndTime                time.Time
 }
 
 type ErrorRateReturn struct {
-    FunctionName string
-    Qualifier    string
-    StartTime    time.Time
-    EndTime      time.Time
-    ErrorRate    float32
+	FunctionName string
+	Qualifier    string
+	StartTime    time.Time
+	EndTime      time.Time
+	ErrorRate    float32
 }
 
 type ErrorType struct {
@@ -99,24 +101,24 @@ type ErrorType struct {
 }
 
 type ErrorTypesReturn struct {
-	Errors       []ErrorType          `json:"errors"`
-	FunctionName string               `json:"functionName"`
-	Qualifier    string               `json:"qualifier"`
-	StartTime    time.Time                `json:"startTime"`
-	EndTime      time.Time                `json:"endTime"`
+	Errors       []ErrorType `json:"errors"`
+	FunctionName string      `json:"functionName"`
+	Qualifier    string      `json:"qualifier"`
+	StartTime    time.Time   `json:"startTime"`
+	EndTime      time.Time   `json:"endTime"`
 }
 
 // MemoryUsagePercentilesReturn holds various statistics on the maximum used memory of invocations
-type DurationStatisticsReturn struct{
-        MinDuration    float32 // Min duration of any run
-        MaxDuration    float32 // Max duration of any run
-        MedianDuration float32 // Median duration of any run
-		MeanDuration   float32 // Mean duration of any run
-        P95Duration    *float32 // Pointers as these values can be nil
-        P99Duration    *float32 // in case of too little samples
-		Conf95Duration *float32 // 95% confidence interval
-        FunctionName    string // Name of the lambda function
-        Qualifier       string // Qualifier of the lambda function
-        StartTime       time.Time // earliest considered invocation
-        EndTime         time.Time // latest considered invocation
-    }
+type DurationStatisticsReturn struct {
+	MinDuration    float32   // Min duration of any run
+	MaxDuration    float32   // Max duration of any run
+	MedianDuration float32   // Median duration of any run
+	MeanDuration   float32   // Mean duration of any run
+	P95Duration    *float32  // Pointers as these values can be nil
+	P99Duration    *float32  // in case of too little samples
+	Conf95Duration *float32  // 95% confidence interval
+	FunctionName   string    // Name of the lambda function
+	Qualifier      string    // Qualifier of the lambda function
+	StartTime      time.Time // earliest considered invocation
+	EndTime        time.Time // latest considered invocation
+}

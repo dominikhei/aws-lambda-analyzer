@@ -3,6 +3,7 @@ package cloudwatchfetcher
 import (
 	"context"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
@@ -12,6 +13,8 @@ import (
 type Fetcher struct {
 	client *cloudwatch.Client
 }
+
+const period int32 = 86400
 
 func New(clients *sdktypes.AWSClients) *Fetcher {
 	return &Fetcher{
@@ -24,7 +27,6 @@ func (f *Fetcher) FetchMetric(
 	query sdktypes.FunctionQuery,
 	metricName string,
 	stat string,
-	period int32,
 ) ([]types.MetricDataResult, error) {
 	dimensions := []types.Dimension{
 		{
