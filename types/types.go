@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/xray"
 )
 
-// Configoptions can be used to configure connections to AWS, if the default credentials chain shall be adjusted.
+// ConfigOptions can be used to configure connections to AWS, if the default credentials chain shall be adjusted.
 // This can be done by overwriting the default region or using a specific profile or even credentials.
 type ConfigOptions struct {
 	Region          string
@@ -79,7 +79,7 @@ type MemoryUsagePercentilesReturn struct {
 	EndTime         time.Time
 }
 
-// BaseStatistics contains general statistics on the lambda function.
+// BaseStatisticsReturn contains general statistics on a lambda function.
 type BaseStatisticsReturn struct {
 	FunctionARN            string
 	FunctionName           string
@@ -120,8 +120,8 @@ type ErrorTypesReturn struct {
 	EndTime      time.Time
 }
 
-// MemoryUsagePercentilesReturn holds various statistics on the maximum used memory of invocations.
-// P95UsageRate, P99UsageRate and Conf95UsageRate can be nil if not enough values are present in
+// DurationStatisticsReturn holds various statistics on the duration of invocations.
+// P95Duration, P99Duration and Conf95Duration can be nil if not enough values are present in
 // the specified inteval, to calculate them robustly.
 type DurationStatisticsReturn struct {
 	MinDuration    float32  // Min duration of any run
