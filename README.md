@@ -44,64 +44,64 @@ If no qualifier is provided, the SDK will analyze all logs and metrics for the f
 
 ### Cold Start Rate
 
-- **Source**: Logs Insights  
-- **Formula**:  
-  `sum(invocations with initDuration) / sum(all invocations)`  
+- **Source**: Logs Insights
+- **Formula**:
+  `sum(invocations with initDuration) / sum(all invocations)`
 - **Return Type**: `float32`
 
 ---
 
 ### Memory Usage Statistics
 
-- **Source**: Logs Insights  
-- **Formula**:  
-  `Used Memory / Allocated Memory`  
-- **Return Type**: `float32`  
-- **Available Aggregations**:  
-  - Minimum Memory Usage Rate  
-  - Maximum Memory Usage Rate  
-  - Median Memory Usage Rate  
-  - Mean Memory Usage Rate  
-  - 95th Percentile Memory Usage Rate (requires ≥ 20 invocations)  
-  - 99th Percentile Memory Usage Rate (requires ≥ 100 invocations)  
+- **Source**: Logs Insights
+- **Formula**:
+  `Used Memory / Allocated Memory`
+- **Return Type**: `float32`
+- **Available Aggregations**:
+  - Minimum Memory Usage Rate
+  - Maximum Memory Usage Rate
+  - Median Memory Usage Rate
+  - Mean Memory Usage Rate
+  - 95th Percentile Memory Usage Rate (requires ≥ 20 invocations)
+  - 99th Percentile Memory Usage Rate (requires ≥ 100 invocations)
   - 95% Confidence Interval of Memory Usage Rate (requires ≥ 30 invocations)
 
 ---
 
 ### Throttle Rate
 
-- **Source**: CloudWatch  
-- **Formula**:  
-  `Throttles / Invocations`  
+- **Source**: CloudWatch
+- **Formula**:
+  `Throttles / Invocations`
 - **Return Type**: `float32`
 
 ---
 
 ### Timeout Rate
 
-- **Source**: CloudWatch  
-- **Formula**:  
-  `Timeouts / Invocations`  
+- **Source**: CloudWatch
+- **Formula**:
+  `Timeouts / Invocations`
 - **Return Type**: `float32`
 
 ---
 
 ### Error Rate
 
-- **Source**: Logs Insights  
-- **Formula**:  
-  `sum(invocations with error) / sum(all invocations)`  
-- **Return Type**: `float32`  
-- **Notes**:  
+- **Source**: Logs Insights
+- **Formula**:
+  `sum(invocations with error) / sum(all invocations)`
+- **Return Type**: `float32`
+- **Notes**:
   Based on distinct `requestID`s where `[ERROR]` is present in logs.
 
 ---
 
 ### Error Types
 
-- **Source**: Logs Insights  
-- **Return Type**: `[]ErrorType`  
-- **Description**:  
-  Extracted from logs containing `[ERROR]`, grouped by semantic category (e.g., timeout, dependency error).  
-- **Notes**:  
+- **Source**: Logs Insights
+- **Return Type**: `[]ErrorType`
+- **Description**:
+  Extracted from logs containing `[ERROR]`, grouped by semantic category (e.g., timeout, dependency error).
+- **Notes**:
   Function timeouts do not count as errors

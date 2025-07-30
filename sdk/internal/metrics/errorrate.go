@@ -3,18 +3,18 @@ package metrics
 import (
 	"context"
 	"fmt"
+
+	sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
 	cloudwatchfetcher "github.com/dominikhei/aws-lambda-analyzer/sdk/internal/cloudwatch"
 	sdktypes "github.com/dominikhei/aws-lambda-analyzer/sdk/types"
-	sdkerrors "github.com/dominikhei/aws-lambda-analyzer/sdk/errors"
 )
 
 func GetErrorRate(
 	ctx context.Context,
 	cwFetcher *cloudwatchfetcher.Fetcher,
 	query sdktypes.FunctionQuery,
-	period int32,
 ) (*sdktypes.ErrorRateReturn, error) {
-	invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum", period)
+	invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
@@ -28,11 +28,10 @@ func GetErrorRate(
 		return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
 	}
 
-	errorsResults, err := cwFetcher.FetchMetric(ctx, query, "Errors", "Sum", period)
+	errorsResults, err := cwFetcher.FetchMetric(ctx, query, "Errors", "Sum")
 	if err != nil {
 		return nil, fmt.Errorf("fetch errors metric: %w", err)
 	}
-
 	errorsSum, err := sumMetricValues(errorsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse errors metric data: %w", err)

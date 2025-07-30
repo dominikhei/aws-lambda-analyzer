@@ -100,32 +100,32 @@ func CalcSummaryStats(vals []float64) (summaryStatistics, error) {
 }
 
 func FunctionExists(ctx context.Context, client *lambda.Client, functionName string) (bool, error) {
-    _, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
-        FunctionName: aws.String(functionName),
-    })
+	_, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
+		FunctionName: aws.String(functionName),
+	})
 
-    var nfe *types.ResourceNotFoundException
-    if errors.As(err, &nfe) {
-        return false, nil
-    }
-    if err != nil {
-        return false, err
-    }
+	var nfe *types.ResourceNotFoundException
+	if errors.As(err, &nfe) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
 
-    return true, nil
+	return true, nil
 }
 
 func QualifierExists(ctx context.Context, client *lambda.Client, functionName, qualifier string) (bool, error) {
-    _, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
-        FunctionName: aws.String(functionName),
-        Qualifier:    aws.String(qualifier),
-    })
-    var nfe *types.ResourceNotFoundException
-    if errors.As(err, &nfe) {
-        return false, nil
-    }
-    if err != nil {
-        return false, err
-    }
-    return true, nil
+	_, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
+		FunctionName: aws.String(functionName),
+		Qualifier:    aws.String(qualifier),
+	})
+	var nfe *types.ResourceNotFoundException
+	if errors.As(err, &nfe) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
