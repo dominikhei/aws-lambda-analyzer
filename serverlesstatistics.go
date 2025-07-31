@@ -425,3 +425,50 @@ func (a *ServerlessStats) GetWasteRatio(
 
 	return metrics.GetWasteRatio(ctx, a.cloudwatchFetcher, a.logsFetcher, query)
 }
+
+// GetColdStartDurationStatistics returns coldstart duration statistics for a given
+// Lambda function and version within the specified time range.
+//
+// Example:
+//
+//	durationReturn, err := serverlessstatistics.GetColdStartDurationStatistics(ctx, "my-function", "v1", time.Now().Add(-1*time.Hour), time.Now())
+//	if err != nil {
+//		log.Fatalf("failed to get duration statistics: %v", err)
+//	}
+//	if durationReturn.P99ColdStartDuration != nil {
+//		fmt.Printf("P99 duration: %.2f MS\n", durationReturn.P99ColdStartDuration)
+//	}
+func (a *ServerlessStats) GetColdStartDurationStatistics(
+	ctx context.Context,
+	functionName string,
+	qualifier string,
+	startTime, endTime time.Time,
+) (*sdktypes.ColdStartDurationStatisticsReturn, error) {
+	if qualifier == "" {
+		qualifier = "$LATEST"
+	}
+	query := sdktypes.FunctionQuery{
+		FunctionName: functionName,
+		Qualifier:    qualifier,
+		StartTime:    startTime,
+		EndTime:      endTime,
+	}
+
+	exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
+	if err != nil {
+		return nil, fmt.Errorf("checking if function exists: %w", err)
+	}
+	if !exists {
+		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
+	}
+
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	if err != nil {
+		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+	}
+	if !exists {
+		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+	}
+
+	return metrics.GetColdStartDurationStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, query)
+}

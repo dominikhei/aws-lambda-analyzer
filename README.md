@@ -68,6 +68,8 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
 - [Error Rate](#error-rate)
 - [Error Types](#error-types)
 - [Duration Statistics](#duration-statistics)
+- [Waste Ratio](#waste-ratio)
+- [Cold Start Duration](#cold-start-duration)
 
 
 
@@ -160,7 +162,20 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
 - **Return Type**: `float64`
 - **Notes**:
   Represents the fraction of time AWS billed for that was not actively used by the function. A high value may indicate over-provisioning, latency in initialization (cold starts), or inefficiencies in execution time.
+---
 
+### Cold Start Duration Statistics
+
+- **Source**: Logs Insights
+- **Return Type**: `float64`
+- **Available Aggregations**:
+  - Minimum Duration
+  - Maximum Duration
+  - Median Duration
+  - Mean Duration
+  - 95th Percentile Duration (requires ≥ 20 invocations)
+  - 99th Percentile Duration (requires ≥ 100 invocations)
+  - 95% Confidence Interval of Duration (requires ≥ 30 invocations)
 ---
 
 ## Examples

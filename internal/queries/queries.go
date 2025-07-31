@@ -64,3 +64,10 @@ const LambdaBilledDurationQueryWithVersion = `
 stats sum(@duration) as totalDuration, sum(@billedDuration) as totalBilledDuration
 | filter @logStream like /\[%s\]/
 `
+
+const LambdaColdStartDurationQueryWithVersion = `
+fields @timestamp, @message
+| filter strcontains(@message, "Init Duration") and @logStream like /\[%s\]/
+| parse @message "Init Duration: * ms" as coldStartDurationMs
+| filter ispresent(coldStartDurationMs)
+`

@@ -102,7 +102,7 @@ type BaseStatisticsReturn struct {
 	TimeoutSeconds         int
 	Runtime                string
 	LastModified           string
-	ProvisionedConcurrency int
+	ProvisionedConcurrency *int
 	NumInvocations         int
 	EnvironmentVariables   map[string]string
 	StartTime              time.Time
@@ -149,6 +149,23 @@ type DurationStatisticsReturn struct {
 	Qualifier      string
 	StartTime      time.Time
 	EndTime        time.Time
+}
+
+// ColdStartDurationStatisticsReturn holds various statistics on the coldstart duration of invocations.
+// P95ColdStartDuration, P99ColdStartDuration and Conf95ColdStartDuration can be nil
+// if not enough values are present in the specified inteval, to calculate them robustly.
+type ColdStartDurationStatisticsReturn struct {
+	MinColdStartDuration    float64  // Min coldstart duration of any run
+	MaxColdStartDuration    float64  // Max coldstart duration of any run
+	MedianColdStartDuration float64  // Median coldstart duration of any run
+	MeanColdStartDuration   float64  // Mean coldstart duration of any run
+	P95ColdStartDuration    *float64 // 95th percentile coldstart duration
+	P99ColdStartDuration    *float64 // 99th percentile coldstart duration
+	Conf95ColdStartDuration *float64 // 95% confidence interval of the coldstart durations
+	FunctionName            string
+	Qualifier               string
+	StartTime               time.Time
+	EndTime                 time.Time
 }
 
 // WasteRatioReturn is the return of GetWasteRatio..
