@@ -78,7 +78,7 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
 - **Source**: Logs Insights
 - **Formula**:
   `sum(invocations with initDuration) / sum(all invocations)`
-- **Return Type**: `float32`
+- **Return Type**: `float64`
 
 ---
 
@@ -87,7 +87,7 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
 - **Source**: Logs Insights
 - **Formula**:
   `Maximum Used Memory / Allocated Memory`
-- **Return Type**: `float32`
+- **Return Type**: `float64`
 - **Available Aggregations**:
   - Minimum Memory Usage Rate
   - Maximum Memory Usage Rate
@@ -105,7 +105,7 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
 - **Source**: CloudWatch
 - **Formula**:
   `Throttles / Invocations`
-- **Return Type**: `float32`
+- **Return Type**: `float64`
 
 ---
 
@@ -114,7 +114,7 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
 - **Source**: CloudWatch
 - **Formula**:
   `Timeouts / Invocations`
-- **Return Type**: `float32`
+- **Return Type**: `float64`
 
 ---
 
@@ -123,7 +123,7 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
 - **Source**: Logs Insights
 - **Formula**:
   `sum(invocations with error) / sum(all invocations)`
-- **Return Type**: `float32`
+- **Return Type**: `float64`
 - **Notes**:
   Based on distinct `requestID`s where `[ERROR]` is present in logs.
 
@@ -141,7 +141,7 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
 ### Duration Statistics
 
 - **Source**: Logs Insights
-- **Return Type**: `float32`
+- **Return Type**: `float64`
 - **Available Aggregations**:
   - Minimum Duration
   - Maximum Duration
@@ -150,6 +150,17 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
   - 95th Percentile Duration (requires ≥ 20 invocations)
   - 99th Percentile Duration (requires ≥ 100 invocations)
   - 95% Confidence Interval of Duration (requires ≥ 30 invocations)
+---
+
+### Waste Ratio
+
+- **Source**: Logs Insights
+- **Formula**:
+  `(billed duration - execution duration) / billed duration`
+- **Return Type**: `float64`
+- **Notes**:
+  Represents the fraction of time AWS billed for that was not actively used by the function. A high value may indicate over-provisioning, latency in initialization (cold starts), or inefficiencies in execution time.
+
 ---
 
 ## Examples

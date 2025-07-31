@@ -59,3 +59,8 @@ filter @message =~ /(?i)\[ERROR\]/ and @logStream like /\[%s\]/
     by coalesce(aws_error_code, specific_error, error_type, "UnknownError") as error_category
 | sort error_count desc
 `
+
+const LambdaBilledDurationQueryWithVersion = `
+stats sum(@duration) as totalDuration, sum(@billedDuration) as totalBilledDuration
+| filter @logStream like /\[%s\]/
+`
