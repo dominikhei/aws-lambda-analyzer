@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
 
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -42,4 +43,13 @@ type mockLogsFetcher struct {
 
 func (m *mockLogsFetcher) RunQuery(ctx context.Context, fq sdktypes.FunctionQuery, queryString string) ([]map[string]string, error) {
 	return m.results, m.err
+}
+
+// Mock Lambda client based on the interface in the interfaces package.
+type mockLambdaClient struct {
+	GetFunctionFunc func(ctx context.Context, params *lambda.GetFunctionInput, optFns ...func(*lambda.Options)) (*lambda.GetFunctionOutput, error)
+}
+
+func (m *mockLambdaClient) GetFunction(ctx context.Context, params *lambda.GetFunctionInput, optFns ...func(*lambda.Options)) (*lambda.GetFunctionOutput, error) {
+	return m.GetFunctionFunc(ctx, params, optFns...)
 }

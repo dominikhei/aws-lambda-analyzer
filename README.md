@@ -178,6 +178,20 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
   - 95% Confidence Interval of Duration (requires ≥ 30 invocations)
 ---
 
+### Function Configuration
+
+- **Source**: Lambda API
+- **Available Aggregations**:
+  - Function Name
+  - Function ARN
+  - Function Version
+  - Configured Memory Size
+  - Configured Timeout
+  - Runtime
+  - Last Modification Date
+  - Environment Variables
+---
+
 ## Examples
 
 This section aims to provide two short example on how to use the sdk. For the available methods and metrics refer to [Available Metrics](#available-metrics) and the detailed section on each metric below. You simply need to pass in the function name, qualifier (version), starttime and endtime into a metric function. The return will be a custom struct exposed in [types](./types/types.go). There you can also see how to access the relevant values and which ones are available.

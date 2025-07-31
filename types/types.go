@@ -95,18 +95,14 @@ type MemoryUsagePercentilesReturn struct {
 
 // BaseStatisticsReturn contains general statistics on a lambda function.
 type BaseStatisticsReturn struct {
-	FunctionARN            string
-	FunctionName           string
-	Qualifier              string
-	MemorySizeMB           int
-	TimeoutSeconds         int
-	Runtime                string
-	LastModified           string
-	ProvisionedConcurrency *int
-	NumInvocations         int
-	EnvironmentVariables   map[string]string
-	StartTime              time.Time
-	EndTime                time.Time
+	FunctionARN          string
+	FunctionName         string
+	Qualifier            string
+	MemorySizeMB         *int32
+	TimeoutSeconds       *int32
+	Runtime              string
+	LastModified         string
+	EnvironmentVariables map[string]string
 }
 
 // ErrorRateReturn is the return of GetErrorRate.

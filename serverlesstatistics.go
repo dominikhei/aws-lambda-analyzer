@@ -472,3 +472,44 @@ func (a *ServerlessStats) GetColdStartDurationStatistics(
 
 	return metrics.GetColdStartDurationStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, query)
 }
+
+// GetFunctionConfiguration returns configuration for a given
+// Lambda function and version.
+//
+// Example:
+//
+//	configs, err := serverlessstatistics.GetFunctionConfiguration(ctx, "my-function", "v1")
+//	if err != nil {
+//		log.Fatalf("failed to get duration statistics: %v", err)
+//	}
+func (a *ServerlessStats) GetFunctionConfiguration(
+	ctx context.Context,
+	functionName string,
+	qualifier string,
+) (*sdktypes.BaseStatisticsReturn, error) {
+	if qualifier == "" {
+		qualifier = "$LATEST"
+	}
+	query := sdktypes.FunctionQuery{
+		FunctionName: functionName,
+		Qualifier:    qualifier,
+	}
+
+	exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
+	if err != nil {
+		return nil, fmt.Errorf("checking if function exists: %w", err)
+	}
+	if !exists {
+		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
+	}
+
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	if err != nil {
+		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+	}
+	if !exists {
+		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+	}
+
+	return metrics.GetFunctionConfiguration(ctx, a.lambdaClient, query)
+}
