@@ -23,6 +23,7 @@ import (
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
 	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	"github.com/dominikhei/serverless-statistics/internal/queries"
+	"github.com/dominikhei/serverless-statistics/internal/utils"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
@@ -40,7 +41,7 @@ func GetColdStartRate(
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
-	invocationsSum, err := sumMetricValues(invocationsResults)
+	invocationsSum, err := utils.SumMetricValues(invocationsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}

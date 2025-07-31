@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 
@@ -154,4 +155,14 @@ func QualifierExists(ctx context.Context, client sdkinterfaces.LambdaClient, fun
 		return false, err
 	}
 	return true, nil
+}
+
+func SumMetricValues(results []cwTypes.MetricDataResult) (float64, error) {
+	var sum float64
+	for _, result := range results {
+		for _, val := range result.Values {
+			sum += val
+		}
+	}
+	return sum, nil
 }

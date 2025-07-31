@@ -21,6 +21,8 @@ import (
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
 	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
+
+	"github.com/dominikhei/serverless-statistics/internal/utils"
 )
 
 // GetErrorRate calculates the ratio of errors and total invoations
@@ -35,7 +37,7 @@ func GetErrorRate(
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
-	invocationsSum, err := sumMetricValues(invocationsResults)
+	invocationsSum, err := utils.SumMetricValues(invocationsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}
@@ -47,7 +49,7 @@ func GetErrorRate(
 	if err != nil {
 		return nil, fmt.Errorf("fetch errors metric: %w", err)
 	}
-	errorsSum, err := sumMetricValues(errorsResults)
+	errorsSum, err := utils.SumMetricValues(errorsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse errors metric data: %w", err)
 	}

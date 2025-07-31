@@ -18,9 +18,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
 	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
+	"github.com/dominikhei/serverless-statistics/internal/utils"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
@@ -37,7 +37,7 @@ func GetThrottleRate(
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
-	invocationsSum, err := sumMetricValues(invocationsResults)
+	invocationsSum, err := utils.SumMetricValues(invocationsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}
@@ -49,7 +49,7 @@ func GetThrottleRate(
 	if err != nil {
 		return nil, fmt.Errorf("fetch throttles metric: %w", err)
 	}
-	throttlesSum, err := sumMetricValues(throttlesResults)
+	throttlesSum, err := utils.SumMetricValues(throttlesResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse throttles metric data: %w", err)
 	}
@@ -63,14 +63,4 @@ func GetThrottleRate(
 		EndTime:      query.EndTime,
 	}
 	return result, nil
-}
-
-func sumMetricValues(results []types.MetricDataResult) (float64, error) {
-	var sum float64
-	for _, result := range results {
-		for _, val := range result.Values {
-			sum += val
-		}
-	}
-	return sum, nil
 }

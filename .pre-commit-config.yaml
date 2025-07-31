@@ -32,3 +32,11 @@ repos:
     rev: v1.32.0
     hooks:
       - id: yamllint
+
+  - repo: local
+    hooks:
+      - id: go-test-all
+        name: Run all Go tests
+        entry: go test ./...
+        language: system
+        pass_filenames: false

@@ -24,6 +24,8 @@ import (
 	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	"github.com/dominikhei/serverless-statistics/internal/queries"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
+
+	"github.com/dominikhei/serverless-statistics/internal/utils"
 )
 
 // GetErrorTypes counts the different errors that occur over a specified time range and qualifier (version).
@@ -40,7 +42,7 @@ func GetErrorTypes(
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
-	invocationsSum, err := sumMetricValues(invocationsResults)
+	invocationsSum, err := utils.SumMetricValues(invocationsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}

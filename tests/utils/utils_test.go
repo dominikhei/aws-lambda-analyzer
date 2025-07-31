@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"github.com/stretchr/testify/assert"
@@ -448,6 +449,45 @@ func TestQualifierExists(t *testing.T) {
 			}
 			assert.Equal(t, tt.want, got)
 			mockClient.AssertExpectations(t)
+		})
+	}
+}
+
+func TestSumMetricValues(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []cwTypes.MetricDataResult
+		want  float64
+	}{
+		{
+			name: "multiple results with multiple values",
+			input: []cwTypes.MetricDataResult{
+				{Values: []float64{1.0, 2.0}},
+				{Values: []float64{3.0, 4.0}},
+			},
+			want: 10.0,
+		},
+		{
+			name:  "empty input slice",
+			input: []cwTypes.MetricDataResult{},
+			want:  0,
+		},
+		{
+			name: "results with empty values",
+			input: []cwTypes.MetricDataResult{
+				{Values: []float64{}},
+				{Values: []float64{5.0}},
+			},
+			want: 5.0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _ := utils.SumMetricValues(tt.input)
+			if got != tt.want {
+				t.Errorf("SumMetricValues() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

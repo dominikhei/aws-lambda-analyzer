@@ -40,7 +40,7 @@ func GetMaxMemoryUsageStatistics(
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
-	invocationsSum, err := sumMetricValues(invocationsResults)
+	invocationsSum, err := utils.SumMetricValues(invocationsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}
