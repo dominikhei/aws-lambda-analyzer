@@ -21,9 +21,9 @@ import (
 	"strings"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
-	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
-	logsinsightsfetcher "github.com/dominikhei/serverless-statistics/internal/logsinsights"
+	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	"github.com/dominikhei/serverless-statistics/internal/queries"
+	"github.com/dominikhei/serverless-statistics/internal/utils"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
@@ -32,8 +32,8 @@ import (
 // The cold start rate is computed as cold starts divided by total invocations.
 func GetColdStartRate(
 	ctx context.Context,
-	logsFetcher *logsinsightsfetcher.Fetcher,
-	cwFetcher *cloudwatchfetcher.Fetcher,
+	logsFetcher sdkinterfaces.LogsInsightsFetcher, //Interface to inject mock for unit tests
+	cwFetcher sdkinterfaces.CloudWatchFetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.ColdStartRateReturn, error) {
 
@@ -41,7 +41,7 @@ func GetColdStartRate(
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
-	invocationsSum, err := sumMetricValues(invocationsResults)
+	invocationsSum, err := utils.SumMetricValues(invocationsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}

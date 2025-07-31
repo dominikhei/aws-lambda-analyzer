@@ -21,8 +21,7 @@ import (
 	"strings"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
-	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
-	logsinsightsfetcher "github.com/dominikhei/serverless-statistics/internal/logsinsights"
+	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	"github.com/dominikhei/serverless-statistics/internal/queries"
 	"github.com/dominikhei/serverless-statistics/internal/utils"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
@@ -37,8 +36,8 @@ import (
 // there is a risk of aggregating durations depending on the period
 func GetDurationStatistics(
 	ctx context.Context,
-	logsFetcher *logsinsightsfetcher.Fetcher,
-	cwFetcher *cloudwatchfetcher.Fetcher,
+	logsFetcher sdkinterfaces.LogsInsightsFetcher,
+	cwFetcher sdkinterfaces.CloudWatchFetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.DurationStatisticsReturn, error) {
 
@@ -46,7 +45,7 @@ func GetDurationStatistics(
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
-	invocationsSum, err := sumMetricValues(invocationsResults)
+	invocationsSum, err := utils.SumMetricValues(invocationsResults)
 	if err != nil {
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}
