@@ -30,6 +30,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 
+	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
@@ -122,7 +123,7 @@ func CalcSummaryStats(vals []float64) (summaryStatistics, error) {
 
 // FunctionExists checks if an AWS Lambda function with the given name exists in the AWS account.
 // Returns true if the function exists, false if not found, or an error on other failures.
-func FunctionExists(ctx context.Context, client *lambda.Client, functionName string) (bool, error) {
+func FunctionExists(ctx context.Context, client sdkinterfaces.LambdaClient, functionName string) (bool, error) {
 	_, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
 		FunctionName: aws.String(functionName),
 	})
@@ -140,7 +141,7 @@ func FunctionExists(ctx context.Context, client *lambda.Client, functionName str
 
 // QualifierExists checks if a specific qualifier (version or alias) exists for an AWS Lambda function.
 // Returns true if the qualifier exists, false if not found, or an error on other failures.
-func QualifierExists(ctx context.Context, client *lambda.Client, functionName, qualifier string) (bool, error) {
+func QualifierExists(ctx context.Context, client sdkinterfaces.LambdaClient, functionName, qualifier string) (bool, error) {
 	_, err := client.GetFunction(ctx, &lambda.GetFunctionInput{
 		FunctionName: aws.String(functionName),
 		Qualifier:    aws.String(qualifier),

@@ -19,7 +19,7 @@ import (
 	"fmt"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
-	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
+	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
@@ -27,7 +27,7 @@ import (
 // of an AWS Lambda function over a specified time range and qualifier (version).
 func GetErrorRate(
 	ctx context.Context,
-	cwFetcher *cloudwatchfetcher.Fetcher,
+	cwFetcher sdkinterfaces.CloudWatchFetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.ErrorRateReturn, error) {
 

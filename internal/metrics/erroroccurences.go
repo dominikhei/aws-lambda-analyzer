@@ -21,8 +21,7 @@ import (
 	"strings"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
-	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
-	logsinsightsfetcher "github.com/dominikhei/serverless-statistics/internal/logsinsights"
+	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	"github.com/dominikhei/serverless-statistics/internal/queries"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -32,8 +31,8 @@ import (
 // based on semantics.
 func GetErrorTypes(
 	ctx context.Context,
-	logsFetcher *logsinsightsfetcher.Fetcher,
-	cwFetcher *cloudwatchfetcher.Fetcher,
+	logsFetcher sdkinterfaces.LogsInsightsFetcher,
+	cwFetcher sdkinterfaces.CloudWatchFetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.ErrorTypesReturn, error) {
 

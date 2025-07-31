@@ -21,8 +21,7 @@ import (
 	"strings"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
-	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
-	logsinsightsfetcher "github.com/dominikhei/serverless-statistics/internal/logsinsights"
+	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	"github.com/dominikhei/serverless-statistics/internal/queries"
 	"github.com/dominikhei/serverless-statistics/internal/utils"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
@@ -32,8 +31,8 @@ import (
 // of an AWS Lambda functions invocations over a specified time range and qualifier (version).
 func GetMaxMemoryUsageStatistics(
 	ctx context.Context,
-	logsFetcher *logsinsightsfetcher.Fetcher,
-	cwFetcher *cloudwatchfetcher.Fetcher,
+	logsFetcher sdkinterfaces.LogsInsightsFetcher,
+	cwFetcher sdkinterfaces.CloudWatchFetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.MemoryUsagePercentilesReturn, error) {
 

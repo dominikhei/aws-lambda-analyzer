@@ -20,7 +20,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
-	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
+	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
@@ -29,11 +29,11 @@ import (
 // The throttle rate is computed as throttled invocations divided by total invocations.
 func GetThrottleRate(
 	ctx context.Context,
-	f *cloudwatchfetcher.Fetcher,
+	cwFetcher sdkinterfaces.CloudWatchFetcher,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.ThrottleRateReturn, error) {
 
-	invocationsResults, err := f.FetchMetric(ctx, query, "Invocations", "Sum")
+	invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
 	if err != nil {
 		return nil, fmt.Errorf("fetch invocations metric: %w", err)
 	}
@@ -45,7 +45,7 @@ func GetThrottleRate(
 		return nil, &sdkerrors.NoInvocationsError{FunctionName: query.FunctionName}
 	}
 
-	throttlesResults, err := f.FetchMetric(ctx, query, "Throttles", "Sum")
+	throttlesResults, err := cwFetcher.FetchMetric(ctx, query, "Throttles", "Sum")
 	if err != nil {
 		return nil, fmt.Errorf("fetch throttles metric: %w", err)
 	}
