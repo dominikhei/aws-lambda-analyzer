@@ -69,7 +69,7 @@ Since the goal was to let the user decide freely what to do in this case, a [cus
 - [Error Types](#error-types)
 - [Duration Statistics](#duration-statistics)
 - [Waste Ratio](#waste-ratio)
-- [Cold Start Duration](#cold-start-duration)
+- [Cold Start Duration Statistics](#cold-start-duration-statistics)
 
 
 
