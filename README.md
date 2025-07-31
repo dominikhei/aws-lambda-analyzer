@@ -9,6 +9,9 @@ Serverless Statistics is a Go sdk that allows you to extract various statistics 
   <a href="./LICENSE">
     <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License" />
   </a>
+  <a href="https://app.codecov.io/github/dominikhei/serverless-statistics">
+    <img src="https://codecov.io/github/dominikhei/serverless-statistics/graph/badge.svg?token=MXEE07C73L" alt="Codecov" />
+  </a>
 </p>
 
 ## Key Configurations
