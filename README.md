@@ -52,6 +52,9 @@ Note: When using `$LATEST`, if your function was updated during the specified ti
 
 There currently is no possibility to distinguish between different aliases in the query results.
 
+### What happens when a function has not been invoked in the specified interval?
+Since the goal was to let the user decide freely what to do in this case, a [custom error](./errors/errors.go) is thrown. You can use `errors.As` in your downstream logic to asses whether this error is raised and decide yourself how you want to treat this case.
+
 
 ## Available Metrics
 
