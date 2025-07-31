@@ -150,3 +150,12 @@ type DurationStatisticsReturn struct {
 	StartTime      time.Time
 	EndTime        time.Time
 }
+
+// WasteRatioReturn is the return of GetWasteRatio..
+type WasteRatioReturn struct {
+	WasteRatio   float64
+	FunctionName string
+	Qualifier    string
+	StartTime    time.Time
+	EndTime      time.Time
+}
