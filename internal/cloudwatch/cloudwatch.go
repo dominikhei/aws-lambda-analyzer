@@ -71,7 +71,7 @@ func (f *Fetcher) FetchMetric(
 	if query.Qualifier == "$LATEST" {
 		resourceValue = query.FunctionName
 	} else {
-		// For any other verison tag, the Resource dimension will be name:tag.
+		// For any other version tag, the Resource dimension will be name:tag.
 		resourceValue = fmt.Sprintf("%s:%s", query.FunctionName, query.Qualifier)
 	}
 

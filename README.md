@@ -2,6 +2,15 @@
 
 Serverless Statistics is a Go sdk that allows you to extract various statistics on your AWS lambda functions, that can be used for monitoring, performance analysis, improvements and automations. It provides a simple and clean interface and handles everything for you such that you can just focus on upstream logic and the data will be provided for you. For examples on how to use it refer to the examples section.
 
+<p align="center">
+  <a href="https://goreportcard.com/report/github.com/dominikhei/serverless-statistics">
+    <img src="https://goreportcard.com/badge/github.com/dominikhei/serverless-statistics" alt="Go Report Card" />
+  </a>
+  <a href="./LICENSE">
+    <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License" />
+  </a>
+</p>
+
 ## Key Configurations
 
 ### Credentials
@@ -119,7 +128,7 @@ There currently is no possibility to distinguish between different aliases in th
 - **Source**: Logs Insights
 - **Return Type**: `[]ErrorType`
 - **Description**:
-  Extracted from logs containing `[ERROR]`, grouped by semantic category (e.g., timeout, dependency error).
+  Extracted from logs containing `[ERROR]`, grouped by semantic category (e.g. `[ERROR] ImportError`-> `ImportError`).
 - **Notes**:
   Function timeouts do not count as errors
 ---
