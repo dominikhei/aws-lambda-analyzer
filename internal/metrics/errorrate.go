@@ -40,7 +40,7 @@ func GetErrorRate(
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}
 	if invocationsSum == 0 {
-		return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
+		return nil, &sdkerrors.NoInvocationsError{FunctionName: query.FunctionName}
 	}
 
 	errorsResults, err := cwFetcher.FetchMetric(ctx, query, "Errors", "Sum")

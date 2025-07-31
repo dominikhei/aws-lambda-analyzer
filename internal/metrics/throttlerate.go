@@ -42,7 +42,7 @@ func GetThrottleRate(
 		return nil, fmt.Errorf("parse invocations metric data: %w", err)
 	}
 	if invocationsSum == 0 {
-		return nil, sdkerrors.NewNoInvocationsError(query.FunctionName)
+		return nil, &sdkerrors.NoInvocationsError{FunctionName: query.FunctionName}
 	}
 
 	throttlesResults, err := f.FetchMetric(ctx, query, "Throttles", "Sum")
