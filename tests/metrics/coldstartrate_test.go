@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	"github.com/dominikhei/serverless-statistics/internal/metrics"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -37,6 +38,7 @@ func TestGetColdStartRate_HappyPath(t *testing.T) {
 			{"totalInvocations": "100", "coldStartLines": "10"},
 		},
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -45,7 +47,7 @@ func TestGetColdStartRate_HappyPath(t *testing.T) {
 		StartTime:    time.Now().Add(-1 * time.Hour),
 		EndTime:      time.Now(),
 	}
-	result, err := metrics.GetColdStartRate(context.Background(), logs, cw, query)
+	result, err := metrics.GetColdStartRate(context.Background(), logs, cw, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -61,6 +63,7 @@ func TestGetColdStartRate_NoInvocations(t *testing.T) {
 		},
 	}
 	logs := &mockLogsFetcher{}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -69,7 +72,7 @@ func TestGetColdStartRate_NoInvocations(t *testing.T) {
 		StartTime:    time.Now().Add(-1 * time.Hour),
 		EndTime:      time.Now(),
 	}
-	_, err := metrics.GetColdStartRate(context.Background(), logs, cw, query)
+	_, err := metrics.GetColdStartRate(context.Background(), logs, cw, cache, query)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -91,6 +94,7 @@ func TestGetColdStartRate_EmptyLogData(t *testing.T) {
 			{"totalInvocations": "", "coldStartLines": ""},
 		},
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -99,7 +103,7 @@ func TestGetColdStartRate_EmptyLogData(t *testing.T) {
 		StartTime:    time.Now().Add(-1 * time.Hour),
 		EndTime:      time.Now(),
 	}
-	result, err := metrics.GetColdStartRate(context.Background(), logs, cw, query)
+	result, err := metrics.GetColdStartRate(context.Background(), logs, cw, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

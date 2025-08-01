@@ -19,6 +19,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
 
@@ -35,4 +36,10 @@ type CloudWatchFetcher interface {
 // This interface matches lambda.Client for tetsing the internal functions
 type LambdaClient interface {
 	GetFunction(ctx context.Context, params *lambda.GetFunctionInput, optFns ...func(*lambda.Options)) (*lambda.GetFunctionOutput, error)
+}
+
+type Cache interface {
+	Has(key cache.CacheKey) bool
+	Set(key cache.CacheKey, value int)
+	Get(key cache.CacheKey) (int, bool)
 }

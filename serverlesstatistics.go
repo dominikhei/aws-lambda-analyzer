@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	"github.com/dominikhei/serverless-statistics/internal/clientmanager"
 	cloudwatchfetcher "github.com/dominikhei/serverless-statistics/internal/cloudwatch"
 	logsinsightsfetcher "github.com/dominikhei/serverless-statistics/internal/logsinsights"
@@ -33,6 +34,7 @@ type ServerlessStats struct {
 	cloudwatchFetcher *cloudwatchfetcher.Fetcher
 	logsFetcher       *logsinsightsfetcher.Fetcher
 	lambdaClient      *lambda.Client
+	invocationsCache  *cache.Cache
 }
 
 // New initializes and returns a new instance of ServerlessStats.
@@ -58,6 +60,7 @@ func New(ctx context.Context, opts sdktypes.ConfigOptions) *ServerlessStats {
 		cloudwatchFetcher: cloudwatchfetcher.New(clients),
 		logsFetcher:       logsinsightsfetcher.New(clients),
 		lambdaClient:      clients.LambdaClient,
+		invocationsCache:  cache.NewCache(),
 	}
 }
 
@@ -103,7 +106,7 @@ func (a *ServerlessStats) GetThrottleRate(
 		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
 	}
 
-	return metrics.GetThrottleRate(ctx, a.cloudwatchFetcher, query)
+	return metrics.GetThrottleRate(ctx, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetTimeoutRate returns the rate of timed-out invocations for a given
@@ -146,7 +149,7 @@ func (a *ServerlessStats) GetTimeoutRate(
 		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
 	}
 
-	return metrics.GetTimeoutRate(ctx, a.cloudwatchFetcher, a.logsFetcher, query)
+	return metrics.GetTimeoutRate(ctx, a.cloudwatchFetcher, a.logsFetcher, a.invocationsCache, query)
 }
 
 // GetColdStartRate returns the rate of cold start invocations for a given
@@ -191,7 +194,7 @@ func (a *ServerlessStats) GetColdStartRate(
 		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
 	}
 
-	return metrics.GetColdStartRate(ctx, a.logsFetcher, a.cloudwatchFetcher, query)
+	return metrics.GetColdStartRate(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetMaxMemoryUsageStatistics returns memory usage statistics for a given
@@ -237,7 +240,7 @@ func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
 		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
 	}
 
-	return metrics.GetMaxMemoryUsageStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, query)
+	return metrics.GetMaxMemoryUsageStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetErrorRate returns the rate of error invocations for a given
@@ -282,7 +285,7 @@ func (a *ServerlessStats) GetErrorRate(
 		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
 	}
 
-	return metrics.GetErrorRate(ctx, a.cloudwatchFetcher, query)
+	return metrics.GetErrorRate(ctx, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetErrorCategoryStatistics returns the distribution of error categories for a given
@@ -329,7 +332,7 @@ func (a *ServerlessStats) GetErrorCategoryStatistics(
 		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
 	}
 
-	return metrics.GetErrorTypes(ctx, a.logsFetcher, a.cloudwatchFetcher, query)
+	return metrics.GetErrorTypes(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetDurationStatistics returns duration statistics for a given
@@ -376,7 +379,7 @@ func (a *ServerlessStats) GetDurationStatistics(
 		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
 	}
 
-	return metrics.GetDurationStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, query)
+	return metrics.GetDurationStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetWasteRatio returns the portion of billed time wasted for a given
@@ -423,7 +426,7 @@ func (a *ServerlessStats) GetWasteRatio(
 		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
 	}
 
-	return metrics.GetWasteRatio(ctx, a.cloudwatchFetcher, a.logsFetcher, query)
+	return metrics.GetWasteRatio(ctx, a.cloudwatchFetcher, a.logsFetcher, a.invocationsCache, query)
 }
 
 // GetColdStartDurationStatistics returns coldstart duration statistics for a given
@@ -470,7 +473,7 @@ func (a *ServerlessStats) GetColdStartDurationStatistics(
 		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
 	}
 
-	return metrics.GetColdStartDurationStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, query)
+	return metrics.GetColdStartDurationStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetFunctionConfiguration returns configuration for a given

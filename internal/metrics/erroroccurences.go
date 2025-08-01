@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	"github.com/dominikhei/serverless-statistics/internal/queries"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
@@ -35,16 +36,32 @@ func GetErrorTypes(
 	ctx context.Context,
 	logsFetcher sdkinterfaces.LogsInsightsFetcher,
 	cwFetcher sdkinterfaces.CloudWatchFetcher,
+	invocationsCache sdkinterfaces.Cache,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.ErrorTypesReturn, error) {
 
-	invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
-	if err != nil {
-		return nil, fmt.Errorf("fetch invocations metric: %w", err)
+	// cache reduces the number of calls to CloudWatch metrics.
+	// It lives as long as the Go process is running.
+	key := cache.CacheKey{
+		FunctionName: query.FunctionName,
+		Qualifier:    query.Qualifier,
+		Start:        query.StartTime,
+		End:          query.EndTime,
 	}
-	invocationsSum, err := utils.SumMetricValues(invocationsResults)
-	if err != nil {
-		return nil, fmt.Errorf("parse invocations metric data: %w", err)
+	var invocationsSum float64
+	if invocationsCache.Has(key) {
+		invocations, _ := invocationsCache.Get(key)
+		invocationsSum = float64(invocations)
+	} else {
+		invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
+		if err != nil {
+			return nil, fmt.Errorf("fetch invocations metric: %w", err)
+		}
+		invocationsSum, err = utils.SumMetricValues(invocationsResults)
+		if err != nil {
+			return nil, fmt.Errorf("parse invocations metric data: %w", err)
+		}
+		invocationsCache.Set(key, int(invocationsSum))
 	}
 	if invocationsSum == 0 {
 		return nil, &sdkerrors.NoInvocationsError{FunctionName: query.FunctionName}

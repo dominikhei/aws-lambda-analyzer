@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	"github.com/dominikhei/serverless-statistics/internal/metrics"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -44,6 +45,8 @@ func TestGetColdStartDurationStatistics_HappyPath(t *testing.T) {
 		},
 	}
 
+	cache := cache.NewCache()
+
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
 		Region:       "us-east-1",
@@ -52,7 +55,7 @@ func TestGetColdStartDurationStatistics_HappyPath(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetColdStartDurationStatistics(context.Background(), logs, cw, query)
+	result, err := metrics.GetColdStartDurationStatistics(context.Background(), logs, cw, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -80,7 +83,9 @@ func TestGetColdStartDurationStatistics_NoInvocations(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	_, err := metrics.GetColdStartDurationStatistics(context.Background(), logs, cw, query)
+	cache := cache.NewCache()
+
+	_, err := metrics.GetColdStartDurationStatistics(context.Background(), logs, cw, cache, query)
 	if err == nil {
 		t.Fatal("expected NoInvocationsError, got nil")
 	}
@@ -112,7 +117,9 @@ func TestGetColdStartDurationStatistics_InvalidDurationEntry(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetColdStartDurationStatistics(context.Background(), logs, cw, query)
+	cache := cache.NewCache()
+
+	result, err := metrics.GetColdStartDurationStatistics(context.Background(), logs, cw, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

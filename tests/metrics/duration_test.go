@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	"github.com/dominikhei/serverless-statistics/internal/metrics"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -43,6 +44,7 @@ func TestGetDurationStatistics_HappyPath(t *testing.T) {
 			{"durationMs": "300"},
 		},
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -52,7 +54,7 @@ func TestGetDurationStatistics_HappyPath(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetDurationStatistics(context.Background(), logs, cw, query)
+	result, err := metrics.GetDurationStatistics(context.Background(), logs, cw, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -71,6 +73,7 @@ func TestGetDurationStatistics_NoInvocations(t *testing.T) {
 		},
 	}
 	logs := &mockLogsFetcher{}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "empty-fn",
@@ -80,7 +83,7 @@ func TestGetDurationStatistics_NoInvocations(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	_, err := metrics.GetDurationStatistics(context.Background(), logs, cw, query)
+	_, err := metrics.GetDurationStatistics(context.Background(), logs, cw, cache, query)
 	if err == nil {
 		t.Fatal("expected NoInvocationsError, got nil")
 	}
@@ -103,6 +106,7 @@ func TestGetDurationStatistics_InvalidDurationEntry(t *testing.T) {
 			{"durationMs": "300"},
 		},
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "broken-fn",
@@ -112,7 +116,7 @@ func TestGetDurationStatistics_InvalidDurationEntry(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetDurationStatistics(context.Background(), logs, cw, query)
+	result, err := metrics.GetDurationStatistics(context.Background(), logs, cw, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

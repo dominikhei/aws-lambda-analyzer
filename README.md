@@ -62,6 +62,7 @@ There currently is no possibility to distinguish between different aliases in th
 
 ### What happens when a function has not been invoked in the specified interval?
 Since the goal was to let the user decide freely what to do in this case, a [custom error](./errors/errors.go) is thrown. You can use `errors.As` in your downstream logic to asses whether this error is raised and decide yourself how you want to treat this case.
+Whether a function has been invoked in a specific interval is cached internally, to reduce calls to cloudwatch metrics and thus alos charges to your AWS account.
 
 
 ## Available Metrics
