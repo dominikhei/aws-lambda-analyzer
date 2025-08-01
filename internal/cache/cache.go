@@ -24,6 +24,7 @@ import (
 )
 
 // CacheKey contains the identifiers of a lambda function and invocation interval.
+// It is not stored in the types package as CacheKey is not meant to be used by users.
 type CacheKey struct {
 	FunctionName string
 	Qualifier    string
@@ -37,7 +38,7 @@ func (k CacheKey) String() string {
 }
 
 // The actual cache implementation, thread safety is guaranteed via a mutex.
-// A CacheKey is only stored in it, if it has been invoked.
+// The cache stores the String() of a CacheKey and the amount of invocations.
 type Cache struct {
 	mu    sync.RWMutex
 	store map[string]int // map from key string to invocation count

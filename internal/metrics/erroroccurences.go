@@ -40,6 +40,8 @@ func GetErrorTypes(
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.ErrorTypesReturn, error) {
 
+	// cache reduces the number of calls to CloudWatch metrics.
+	// It lives as long as the Go process is running.
 	key := cache.CacheKey{
 		FunctionName: query.FunctionName,
 		Qualifier:    query.Qualifier,
