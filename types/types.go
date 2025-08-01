@@ -20,7 +20,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
-	"github.com/aws/aws-sdk-go-v2/service/xray"
 )
 
 // ConfigOptions can be used to configure connections to AWS, if the default credentials chain shall be adjusted.
@@ -45,7 +44,6 @@ type FunctionQuery struct {
 type AWSClients struct {
 	LambdaClient     *lambda.Client
 	CloudWatchClient *cloudwatch.Client
-	XRayClient       *xray.Client
 	LogsClient       *cloudwatchlogs.Client
 }
 
@@ -164,11 +162,19 @@ type ColdStartDurationStatisticsReturn struct {
 	EndTime                 time.Time
 }
 
-// WasteRatioReturn is the return of GetWasteRatio..
+// WasteRatioReturn is the return of GetWasteRatio.
 type WasteRatioReturn struct {
 	WasteRatio   float64
 	FunctionName string
 	Qualifier    string
 	StartTime    time.Time
 	EndTime      time.Time
+}
+
+// Prometheusconfig is used to configure
+type PrometheusConfig struct {
+	URL      string
+	JobName  string
+	Grouping map[string]string
+	Enabled  bool
 }
