@@ -12,7 +12,12 @@ Serverless Statistics is a Go sdk that allows you to extract various statistics 
   <a href="https://app.codecov.io/github/dominikhei/serverless-statistics">
     <img src="https://codecov.io/github/dominikhei/serverless-statistics/graph/badge.svg?token=MXEE07C73L" alt="Codecov" />
   </a>
+  </a>
+  <a href="https://github.com/dominikhei/serverless-statistics/actions/workflows/ci.yml">
+    <img src="https://github.com/dominikhei/serverless-statistics/actions/workflows/ci.yml/badge.svg" alt="CI" />
+  </a>
 </p>
+
 
 ## Key Configurations
 
