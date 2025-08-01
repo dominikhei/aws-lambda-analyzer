@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	"github.com/dominikhei/serverless-statistics/internal/metrics"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -40,6 +41,7 @@ func TestGetTimeoutRate_HappyPath(t *testing.T) {
 		},
 		err: nil,
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -49,7 +51,7 @@ func TestGetTimeoutRate_HappyPath(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetTimeoutRate(context.Background(), cw, logs, query)
+	result, err := metrics.GetTimeoutRate(context.Background(), cw, logs, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -73,8 +75,9 @@ func TestGetTimeoutRate_NoInvocations(t *testing.T) {
 		FunctionName: "test-fn",
 	}
 	logs := &mockLogsFetcher{}
+	cache := cache.NewCache()
 
-	_, err := metrics.GetTimeoutRate(context.Background(), cw, logs, query)
+	_, err := metrics.GetTimeoutRate(context.Background(), cw, logs, cache, query)
 	if err == nil {
 		t.Fatal("expected error for no invocations, got nil")
 	}
@@ -94,6 +97,7 @@ func TestGetTimeoutRate_ParseInvocationCountError(t *testing.T) {
 		},
 		err: nil,
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -103,7 +107,7 @@ func TestGetTimeoutRate_ParseInvocationCountError(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	_, err := metrics.GetTimeoutRate(context.Background(), cw, logs, query)
+	_, err := metrics.GetTimeoutRate(context.Background(), cw, logs, cache, query)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -122,6 +126,7 @@ func TestGetTimeoutRate_ZeroTimeoutCount(t *testing.T) {
 		},
 		err: nil,
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -131,7 +136,7 @@ func TestGetTimeoutRate_ZeroTimeoutCount(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetTimeoutRate(context.Background(), cw, logs, query)
+	result, err := metrics.GetTimeoutRate(context.Background(), cw, logs, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

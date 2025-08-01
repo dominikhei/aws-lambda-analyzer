@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	"github.com/dominikhei/serverless-statistics/internal/metrics"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -37,6 +38,7 @@ func TestGetWasteRatio_HappyPath(t *testing.T) {
 			{"totalDuration": "100", "totalBilledDuration": "110"},
 		},
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -45,7 +47,7 @@ func TestGetWasteRatio_HappyPath(t *testing.T) {
 		StartTime:    time.Now().Add(-1 * time.Hour),
 		EndTime:      time.Now(),
 	}
-	result, err := metrics.GetWasteRatio(context.Background(), cw, logs, query)
+	result, err := metrics.GetWasteRatio(context.Background(), cw, logs, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -61,6 +63,7 @@ func TestGetWasteRatio_NoInvocations(t *testing.T) {
 		},
 	}
 	logs := &mockLogsFetcher{}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -69,7 +72,7 @@ func TestGetWasteRatio_NoInvocations(t *testing.T) {
 		StartTime:    time.Now().Add(-1 * time.Hour),
 		EndTime:      time.Now(),
 	}
-	_, err := metrics.GetWasteRatio(context.Background(), cw, logs, query)
+	_, err := metrics.GetWasteRatio(context.Background(), cw, logs, cache, query)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -91,6 +94,7 @@ func TestGetWasteRatio_EmptyLogData(t *testing.T) {
 			{"totalDuration": "", "totalBilledDuration": ""},
 		},
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -99,7 +103,7 @@ func TestGetWasteRatio_EmptyLogData(t *testing.T) {
 		StartTime:    time.Now().Add(-1 * time.Hour),
 		EndTime:      time.Now(),
 	}
-	_, err := metrics.GetWasteRatio(context.Background(), cw, logs, query)
+	_, err := metrics.GetWasteRatio(context.Background(), cw, logs, cache, query)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}

@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	"github.com/dominikhei/serverless-statistics/internal/metrics"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -37,6 +38,7 @@ func TestGetErrorTypes_HappyPath(t *testing.T) {
 			{"error_category": "ValidationError", "error_count": "3"},
 		},
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "my-function",
@@ -45,7 +47,7 @@ func TestGetErrorTypes_HappyPath(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetErrorTypes(context.Background(), logs, cw, query)
+	result, err := metrics.GetErrorTypes(context.Background(), logs, cw, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -66,6 +68,7 @@ func TestGetErrorTypes_NoInvocations(t *testing.T) {
 		results: []types.MetricDataResult{{Values: []float64{0}}},
 	}
 	logs := &mockLogsFetcher{}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "empty-fn",
@@ -74,7 +77,7 @@ func TestGetErrorTypes_NoInvocations(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	_, err := metrics.GetErrorTypes(context.Background(), logs, cw, query)
+	_, err := metrics.GetErrorTypes(context.Background(), logs, cw, cache, query)
 	if err == nil {
 		t.Fatal("expected NoInvocationsError, got nil")
 	}
@@ -94,6 +97,7 @@ func TestGetErrorTypes_InvalidErrorCount(t *testing.T) {
 			{"error_category": "ValidationError", "error_count": "7"},
 		},
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "broken-fn",
@@ -102,7 +106,7 @@ func TestGetErrorTypes_InvalidErrorCount(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetErrorTypes(context.Background(), logs, cw, query)
+	result, err := metrics.GetErrorTypes(context.Background(), logs, cw, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -125,6 +129,7 @@ func TestGetErrorTypes_MissingErrorCategory(t *testing.T) {
 			{"error_count": "6"},
 		},
 	}
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "missing-cat-fn",
@@ -133,7 +138,7 @@ func TestGetErrorTypes_MissingErrorCategory(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetErrorTypes(context.Background(), logs, cw, query)
+	result, err := metrics.GetErrorTypes(context.Background(), logs, cw, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

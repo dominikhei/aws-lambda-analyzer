@@ -22,6 +22,7 @@ import (
 
 	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	"github.com/dominikhei/serverless-statistics/internal/metrics"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -29,9 +30,11 @@ import (
 func TestGetThrottleRate_HappyPath(t *testing.T) {
 	mock := &mockCWFetcher{
 		results: []cwTypes.MetricDataResult{
-			{Values: []float64{50}}, // This will be returned for both Invocations and Throttles
+			{Values: []float64{50}}, // both Invocations and Throttles
 		},
 	}
+
+	cache := cache.NewCache()
 
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
@@ -41,30 +44,42 @@ func TestGetThrottleRate_HappyPath(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetThrottleRate(context.Background(), mock, query)
+	// First call: cache miss, will fetch metrics
+	result, err := metrics.GetThrottleRate(context.Background(), mock, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	expectedRate := 1.0 // 50 / 50
+	expectedRate := 1.0
+	if result.ThrottleRate != expectedRate {
+		t.Errorf("expected throttle rate %v, got %v", expectedRate, result.ThrottleRate)
+	}
+
+	result, err = metrics.GetThrottleRate(context.Background(), mock, cache, query)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	if result.ThrottleRate != expectedRate {
 		t.Errorf("expected throttle rate %v, got %v", expectedRate, result.ThrottleRate)
 	}
 }
 
 func TestGetThrottleRate_NoInvocations(t *testing.T) {
-	cw := &mockCWFetcher{
+	mock := &mockCWFetcher{
 		results: []cwTypes.MetricDataResult{
 			{Values: []float64{0}}, // zero invocations
 		},
 		err: nil,
 	}
 
+	cache := cache.NewCache()
+
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
+		Region:       "us-east-1",
 	}
 
-	_, err := metrics.GetThrottleRate(context.Background(), cw, query)
+	_, err := metrics.GetThrottleRate(context.Background(), mock, cache, query)
 	if err == nil {
 		t.Fatal("expected error for no invocations, got nil")
 	}

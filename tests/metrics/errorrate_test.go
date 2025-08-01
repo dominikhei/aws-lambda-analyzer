@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	"github.com/dominikhei/serverless-statistics/internal/metrics"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -33,6 +34,8 @@ func TestGetErrorRate_HappyPath(t *testing.T) {
 		},
 		err: nil,
 	}
+	cache := cache.NewCache()
+
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
 		Region:       "us-east-1",
@@ -41,7 +44,7 @@ func TestGetErrorRate_HappyPath(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	result, err := metrics.GetErrorRate(context.Background(), mockCW, query)
+	result, err := metrics.GetErrorRate(context.Background(), mockCW, cache, query)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -57,6 +60,8 @@ func TestGetErrorRate_NoInvocations(t *testing.T) {
 		},
 		err: nil,
 	}
+	cache := cache.NewCache()
+
 	query := sdktypes.FunctionQuery{
 		FunctionName: "test-fn",
 		Region:       "us-east-1",
@@ -65,7 +70,7 @@ func TestGetErrorRate_NoInvocations(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 
-	_, err := metrics.GetErrorRate(context.Background(), mockCW, query)
+	_, err := metrics.GetErrorRate(context.Background(), mockCW, cache, query)
 	if err == nil {
 		t.Fatal("expected NoInvocationsError, got nil")
 	}

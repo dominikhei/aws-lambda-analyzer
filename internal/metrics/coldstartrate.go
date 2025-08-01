@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	sdkerrors "github.com/dominikhei/serverless-statistics/errors"
+	"github.com/dominikhei/serverless-statistics/internal/cache"
 	sdkinterfaces "github.com/dominikhei/serverless-statistics/internal/interfaces"
 	"github.com/dominikhei/serverless-statistics/internal/queries"
 	"github.com/dominikhei/serverless-statistics/internal/utils"
@@ -34,16 +35,30 @@ func GetColdStartRate(
 	ctx context.Context,
 	logsFetcher sdkinterfaces.LogsInsightsFetcher, //Interface to inject mock for unit tests
 	cwFetcher sdkinterfaces.CloudWatchFetcher,
+	invocationsCache sdkinterfaces.Cache,
 	query sdktypes.FunctionQuery,
 ) (*sdktypes.ColdStartRateReturn, error) {
 
-	invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
-	if err != nil {
-		return nil, fmt.Errorf("fetch invocations metric: %w", err)
+	key := cache.CacheKey{
+		FunctionName: query.FunctionName,
+		Qualifier:    query.Qualifier,
+		Start:        query.StartTime,
+		End:          query.EndTime,
 	}
-	invocationsSum, err := utils.SumMetricValues(invocationsResults)
-	if err != nil {
-		return nil, fmt.Errorf("parse invocations metric data: %w", err)
+	var invocationsSum float64
+	if invocationsCache.Has(key) {
+		invocations, _ := invocationsCache.Get(key)
+		invocationsSum = float64(invocations)
+	} else {
+		invocationsResults, err := cwFetcher.FetchMetric(ctx, query, "Invocations", "Sum")
+		if err != nil {
+			return nil, fmt.Errorf("fetch invocations metric: %w", err)
+		}
+		invocationsSum, err = utils.SumMetricValues(invocationsResults)
+		if err != nil {
+			return nil, fmt.Errorf("parse invocations metric data: %w", err)
+		}
+		invocationsCache.Set(key, int(invocationsSum))
 	}
 	if invocationsSum == 0 {
 		return nil, &sdkerrors.NoInvocationsError{FunctionName: query.FunctionName}
