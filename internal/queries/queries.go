@@ -15,20 +15,20 @@
 package queries
 
 const LambdaTimeoutQueryWithVersion = `
-filter @message like /Status: timeout/ and @logStream like /\[%s\]/
+filter @type = "REPORT" and @message like /Status: timeout/ and @logStream like /\[%s\]/
 | stats count_distinct(@requestId) as timeoutCount
 `
 
 const LambdaMemoryUtilizationQueryWithVersion = `
-parse @message "Memory Size: * MB\tMax Memory Used: * MB" as memorySize, maxMemoryUsed
-| filter ispresent(memorySize) and ispresent(maxMemoryUsed)  and @logStream like /\[%s\]/
+filter @type = "REPORT" and @message like /Memory Size/ and @logStream like /\[%s\]/
+| parse @message "Memory Size: * MB\tMax Memory Used: * MB" as memorySize, maxMemoryUsed
 | display @timestamp, memorySize, maxMemoryUsed, maxMemoryUsed / memorySize as memoryUtilizationRatio
 `
 
 const LambdaDurationQueryWithVersion = `
 fields @timestamp, @message
+| filter @type = "REPORT" and @message like /Duration:/ and @logStream like /\[%s\]/
 | parse @message "Duration: * ms" as durationMs
-| filter ispresent(durationMs) and @logStream like /\[%s\]/
 `
 
 const LambdaColdStartRateWithVersion = `
@@ -45,14 +45,14 @@ filter @message like /(?i)(ERROR)/ and @logStream like /\[%s\]/
 `
 
 const LambdaUniqueRequestsWithVersion = `
-filter @logStream like /\[%s\]/
+filter @type = "REPORT" and @logStream like /\[%s\]/
 | stats count_distinct(@requestId) as invocationsCount
 `
 
 const LambdaErrorTypesQueryWithVersion = `
-filter @message =~ /(?i)\[ERROR\]/ and @logStream like /\[%s\]/
-| parse @message /\[ERROR\]\s+(?<error_type>[^ :]+)[ :]*(?<error_details>.*)?/
-| parse error_details /(?<specific_error>.*?)\s*when calling/
+filter @logStream like /\[%s\]/ and @message like /(?i)\[ERROR\]/
+| parse @message "[ERROR] *: *" as error_type, error_details
+| parse error_details "* when calling *" as specific_error, _
 | parse error_details /An error occurred \((?<aws_error_code>\w+)\)/
 | stats
     count() as error_count
@@ -61,13 +61,13 @@ filter @message =~ /(?i)\[ERROR\]/ and @logStream like /\[%s\]/
 `
 
 const LambdaBilledDurationQueryWithVersion = `
-stats sum(@duration) as totalDuration, sum(@billedDuration) as totalBilledDuration
-| filter @logStream like /\[%s\]/
+filter @type = "REPORT" and @logStream like /\[%s\]/
+| stats sum(@duration) as totalDuration, sum(@billedDuration) as totalBilledDuration
 `
 
 const LambdaColdStartDurationQueryWithVersion = `
 fields @timestamp, @message
-| filter strcontains(@message, "Init Duration") and @logStream like /\[%s\]/
+| filter @type = "REPORT" and @message like /Init Duration/ and @logStream like /\[%s\]/
 | parse @message "Init Duration: * ms" as coldStartDurationMs
 | filter ispresent(coldStartDurationMs)
 `
