@@ -9,7 +9,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.45.3
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.52.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.72.0
-	github.com/aws/aws-sdk-go-v2/service/xray v1.31.7
 	gonum.org/v1/gonum v0.16.0
 )
 

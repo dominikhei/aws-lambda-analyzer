@@ -23,7 +23,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
-	"github.com/aws/aws-sdk-go-v2/service/xray"
 	"github.com/dominikhei/serverless-statistics/internal/utils"
 	sdktypes "github.com/dominikhei/serverless-statistics/types"
 )
@@ -43,7 +42,6 @@ func NewAWSClients(ctx context.Context, opts sdktypes.ConfigOptions) (*sdktypes.
 	return &sdktypes.AWSClients{
 		LambdaClient:     lambda.NewFromConfig(cfg),
 		CloudWatchClient: cloudwatch.NewFromConfig(cfg),
-		XRayClient:       xray.NewFromConfig(cfg),
 		LogsClient:       cloudwatchlogs.NewFromConfig(cfg),
 	}, nil
 }
