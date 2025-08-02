@@ -49,12 +49,12 @@ stats := serverlessstatistics.New(ctx, opts)
 You specify which Lambda function to analyze by providing:
 
 - __Function Name__ - The name of your Lambda function
-- __Qualifier__ (optional) - A specific version number. Defaults to `$LATEST`.
+- __Version__ (optional) - A specific version. Defaults to `$LATEST`.
 
-If no qualifier is provided, the SDK will analyze the logs and metrics for the `$LATEST` version.
+If no version is provided, the SDK will analyze the logs and metrics for the `$LATEST` version.
 
 ### How are Versions and Aliases considered?
-If a version tag is present, only the invocations for that specific version will be considered. If no tag is set in the `Qualifier` parameter, the `$LATEST` qualifier will be used by default.
+If a version tag is present, only the invocations for that specific version will be considered. If no tag is set in the `Version` parameter, the `$LATEST` version will be used by default.
 
 Note: When using `$LATEST`, if your function was updated during the specified time frame, invocations from both the old and new versions will be included in the results (since both were `$LATEST` at different times). Set your timeframe carefully to avoid mixing versions unintentionally.
 
@@ -72,7 +72,7 @@ Most metric functions in `serverless-statistics` require the following input par
 |---------------|-------------------|-------------|
 | `ctx`         | `context.Context` | Go context for timeout and cancellation. Pass `context.Background()` or derive from upstream logic. |
 | `functionName`| `string`          | The name of the AWS Lambda function to analyze. This must match the name used in the AWS Console. |
-| `qualifier`   | `string` (optional) | The version or alias of the Lambda function. Defaults to `"$LATEST"` if left empty. |
+| `version`   | `string` (optional) | The version of the Lambda function. Defaults to `"$LATEST"` if left empty. |
 | `startTime`   | `time.Time`       | Start of the time window for analysis. Should be within the function's log retention period. |
 | `endTime`     | `time.Time`       | End of the time window for analysis. Typically `time.Now()`. Must be after `startTime`. |
 
@@ -227,7 +227,7 @@ Most metric functions in `serverless-statistics` require the following input par
 
 ## Examples
 
-This section aims to provide two short example on how to use the sdk. For the available methods and metrics refer to [Available Metrics](#available-metrics) and the detailed section on each metric below. You simply need to pass in the function name, qualifier (version), starttime and endtime into a metric function. The return will be a custom struct exposed in [types](./types/types.go). There you can also see how to access the relevant values and which ones are available.
+This section aims to provide two short example on how to use the sdk. For the available methods and metrics refer to [Available Metrics](#available-metrics) and the detailed section on each metric below. You simply need to pass in the function name, version, starttime and endtime into a metric function. The return will be a custom struct exposed in [types](./types/types.go). There you can also see how to access the relevant values and which ones are available.
 
 ### Initialization:
 
@@ -249,28 +249,17 @@ stats := serverlessstatistics.New(ctx, opts)
 
 ```go
 stats := serverlessstatistics.New(ctx, opts)
-functionName := "my-lambda-function"
+functionName := "testFunction"
+version := "v1"
 endTime := time.Now()
-startTime := endTime.Add(-24 * time.Hour)
-
-errorStats, err := stats.GetErrorCategoryStatistics(ctx, functionName, qualifier, startTime, endTime)
+startTime := endTime.Add(-12 * time.Hour)
+rate, err := stats.GetWasteRatio(ctx, functionName, version, startTime, endTime)
 if err != nil {
-	fmt.Printf("%v", err)
+	fmt.Printf("error: %v\n", err)
 	return
 }
-if len(errorStats.Errors) == 0 {
-  fmt.Println("No errors found in the last 24 hours")
-} else {
-  fmt.Printf("Error Analysis for function '%s' (%s)\n", errorStats.FunctionName, errorStats.Qualifier)
-  fmt.Printf("Analysis period: %s to %s\n\n",
-    errorStats.StartTime.Format("2006-01-02 15:04:05"),
-    errorStats.EndTime.Format("2006-01-02 15:04:05"))
+fmt.Printf("The waste ratio is %v percent", rate.WasteRatio * 100)
 
-  fmt.Printf("Found %d error categories:\n", len(errorStats.Errors))
-  for _, errorType := range errorStats.Errors {
-    fmt.Printf("  • %-25s: %d occurrences\n", errorType.ErrorCategory, errorType.ErrorCount)
-    }
-}
 ```
 
 ## Contributing

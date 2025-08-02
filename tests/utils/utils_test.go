@@ -338,18 +338,6 @@ func TestQualifierExists(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:         "alias qualifier exists",
-			functionName: "test-function",
-			qualifier:    "PROD",
-			setupMock: func(m *MockLambdaClient) {
-				m.On("GetFunction", mock.Anything, mock.MatchedBy(func(input *lambda.GetFunctionInput) bool {
-					return *input.FunctionName == "test-function" && *input.Qualifier == "PROD"
-				})).Return(&lambda.GetFunctionOutput{}, nil)
-			},
-			want:    true,
-			wantErr: false,
-		},
-		{
 			name:         "qualifier does not exist",
 			functionName: "test-function",
 			qualifier:    "999",

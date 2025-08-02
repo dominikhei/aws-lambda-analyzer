@@ -184,7 +184,7 @@ func FunctionExists(ctx context.Context, client sdkinterfaces.LambdaClient, func
 	return true, nil
 }
 
-// QualifierExists checks if a specific qualifier (version or alias) exists for an AWS Lambda function.
+// QualifierExists checks if a specific qualifier (version) exists for an AWS Lambda function. Aliases are not supported.
 // Returns true if the qualifier exists, false if not found, or an error on other failures.
 func QualifierExists(ctx context.Context, client sdkinterfaces.LambdaClient, functionName, qualifier string) (bool, error) {
 	_, err := client.GetFunction(ctx, &lambda.GetFunctionInput{

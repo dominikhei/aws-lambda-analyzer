@@ -12,6 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package serverlessstatistics provides a comprehensive client for fetching
+// detailed AWS Lambda performance and reliability metrics.
+//
+// It simplifies access to key Lambda statistics such as cold start rates,
+// invocation durations, error rates and categories, memory usage percentiles,
+// throttle and timeout rates, and waste ratios.
+//
+// This package wraps AWS CloudWatch, Lambda, and CloudWatch Logs Insights
+// clients to gather and aggregate metrics over configurable time intervals.
+//
+// Typical usage involves initializing a ServerlessStats instance with your
+// AWS configuration options and then querying for metrics for a specific
+// Lambda function and version. Aliases are not supported.
+//
+// Example:
+//
+//	ctx := context.Background()
+//	opts := types.ConfigOptions{
+//		Region: "us-west-2",
+//		// Additional AWS config options like credentials or profile can be set here
+//	}
+//	stats := serverlessstatistics.New(ctx, opts)
+//
+//	// Fetch cold start rate over the last 24 hours
+//	startTime := time.Now().Add(-24 * time.Hour)
+//	endTime := time.Now()
+//	return, err := stats.GetColdStartRate(ctx, "myLambdaFunction", "$LATEST", startTime, endTime)
+//	if err != nil {
+//	    log.Fatalf("Failed to get cold start rate: %v", err)
+//	}
+//	fmt.Printf("Cold start rate: %f\n", return.ColdStartRate)
+//
+// The package is designed to aid developers and SRE teams in monitoring
+// and optimizing the performance of their serverless applications by
+// providing actionable Lambda function insights programmatically.
 package serverlessstatistics
 
 import (
@@ -68,18 +103,18 @@ func New(ctx context.Context, opts sdktypes.ConfigOptions) *ServerlessStats {
 }
 
 // GetThrottleRate returns the throttle rate (i.e., the proportion of throttled invocations)
-// for a given AWS Lambda function and version (qualifier) within the specified time range.
+// for a given AWS Lambda function and version within the specified time range.
 //
 // Input Parameters:
 //   - ctx: Context used for cancellation and timeouts.
 //   - functionName: The name of the Lambda function to analyze.
-//   - qualifier: (Optional) Version or alias of the Lambda function. If empty, defaults to "$LATEST".
+//   - version: (Optional) Version of the Lambda function. If empty, defaults to "$LATEST".
 //   - startTime: The beginning of the time window to analyze.
 //   - endTime: The end of the time window to analyze.
 //
 // Returns:
 //   - *sdktypes.ThrottleRateReturn: Struct containing the calculated throttle rate (as a float64 between 0 and 1).
-//   - error: Non-nil if the function or qualifier doesn't exist, or if the underlying CloudWatch fetch fails.
+//   - error: Non-nil if the function or version doesn't exist, or if the underlying CloudWatch fetch fails.
 //
 // Example:
 //
@@ -91,15 +126,15 @@ func New(ctx context.Context, opts sdktypes.ConfigOptions) *ServerlessStats {
 func (a *ServerlessStats) GetThrottleRate(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 	startTime, endTime time.Time,
 ) (*sdktypes.ThrottleRateReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
@@ -112,31 +147,31 @@ func (a *ServerlessStats) GetThrottleRate(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetThrottleRate(ctx, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetTimeoutRate returns the timeout rate (i.e., the proportion of Lambda function
-// invocations that timed out) for a given AWS Lambda function and version (qualifier)
+// invocations that timed out) for a given AWS Lambda function and version
 // within the specified time range.
 //
 // Input Parameters:
 //   - ctx: Context for cancellation, deadlines, and timeouts.
 //   - functionName: The name of the AWS Lambda function to analyze.
-//   - qualifier: (Optional) Lambda version or alias. If empty, defaults to "$LATEST".
+//   - version: (Optional) Lambda version. If empty, defaults to "$LATEST".
 //   - startTime: Start of the analysis time window (must be before endTime).
 //   - endTime: End of the analysis time window (typically time.Now()).
 //
 // Returns:
 //   - *sdktypes.TimeoutRateReturn: Struct containing the timeout rate as a float64 (e.g., 0.12 = 12%).
-//   - error: Non-nil if the function or qualifier doesn't exist, or if CloudWatch/Logs queries fail.
+//   - error: Non-nil if the function or version doesn't exist, or if CloudWatch/Logs queries fail.
 //
 // Example:
 //
@@ -148,15 +183,15 @@ func (a *ServerlessStats) GetThrottleRate(
 func (a *ServerlessStats) GetTimeoutRate(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 	startTime, endTime time.Time,
 ) (*sdktypes.TimeoutRateReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
@@ -169,31 +204,31 @@ func (a *ServerlessStats) GetTimeoutRate(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetTimeoutRate(ctx, a.cloudwatchFetcher, a.logsFetcher, a.invocationsCache, query)
 }
 
-// GetColdStartRate returns the cold start rate for a given AWS Lambda function and version (qualifier)
+// GetColdStartRate returns the cold start rate for a given AWS Lambda function and version
 // within the specified time range. A cold start is identified by the presence of an `initDuration` field
 // in the invocation logs.
 //
 // Input Parameters:
 //   - ctx: Context for timeout and cancellation control.
 //   - functionName: The name of the AWS Lambda function to analyze.
-//   - qualifier: (Optional) Lambda version or alias. If empty, defaults to "$LATEST".
+//   - version: (Optional) Lambda version. If empty, defaults to "$LATEST".
 //   - startTime: Start of the time window to analyze (should be within log retention).
 //   - endTime: End of the time window to analyze (usually time.Now()).
 //
 // Returns:
 //   - *sdktypes.ColdStartRateReturn: Struct containing the cold start rate as a float64 (e.g., 0.18 = 18%).
-//   - error: Returned if the function or qualifier does not exist or if log/metric queries fail.
+//   - error: Returned if the function or version does not exist or if log/metric queries fail.
 //
 // Example:
 //
@@ -205,15 +240,15 @@ func (a *ServerlessStats) GetTimeoutRate(
 func (a *ServerlessStats) GetColdStartRate(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 	startTime, endTime time.Time,
 ) (*sdktypes.ColdStartRateReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
@@ -226,33 +261,33 @@ func (a *ServerlessStats) GetColdStartRate(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetColdStartRate(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetMaxMemoryUsageStatistics returns memory usage percentiles for a given AWS Lambda function
-// and version (qualifier) within the specified time range. Memory usage is calculated as the
+// and version within the specified time range. Memory usage is calculated as the
 // ratio of maximum used memory to allocated memory for each invocation, and then aggregated
 // into various percentiles.
 //
 // Input Parameters:
 //   - ctx: Context for timeout and cancellation handling.
 //   - functionName: The name of the AWS Lambda function to analyze.
-//   - qualifier: (Optional) Lambda version or alias. If empty, defaults to "$LATEST".
+//   - version: (Optional) Lambda version. If empty, defaults to "$LATEST".
 //   - startTime: Start of the time window for analysis (should be within log retention).
 //   - endTime: End of the time window for analysis (typically time.Now()).
 //
 // Returns:
 //   - *sdktypes.MemoryUsagePercentilesReturn: Struct containing memory usage percentiles,
 //     such as Min, Max, Median, Mean, P95, P99, and 95% Confidence Interval. Percentages are expressed as float64 (e.g., 0.73 = 73%).
-//   - error: Returned if the function or qualifier does not exist, or if log queries fail.
+//   - error: Returned if the function or version does not exist, or if log queries fail.
 //
 // Example:
 //
@@ -266,15 +301,15 @@ func (a *ServerlessStats) GetColdStartRate(
 func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 	startTime, endTime time.Time,
 ) (*sdktypes.MemoryUsagePercentilesReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
@@ -287,35 +322,35 @@ func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetMaxMemoryUsageStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
-// GetErrorRate returns the error rate for a given AWS Lambda function and version (qualifier)
+// GetErrorRate returns the error rate for a given AWS Lambda function and version
 // within the specified time range. An error is identified by log entries containing the "[ERROR]" tag.
 //
 // Input Parameters:
 //   - ctx: Context for timeout and cancellation control.
 //   - functionName: The name of the AWS Lambda function to analyze.
-//   - qualifier: (Optional) Lambda version or alias. If empty, defaults to "$LATEST".
+//   - version: (Optional) Lambda version. If empty, defaults to "$LATEST".
 //   - startTime: Start of the time window to analyze (should be within log retention).
 //   - endTime: End of the time window to analyze (typically time.Now()).
 //
 // Returns:
 //   - *sdktypes.ErrorRateReturn: Struct containing the error rate as a float64 (e.g., 0.07 = 7%).
-//   - error: Returned if the function or qualifier does not exist, or if metric/log queries fail.
+//   - error: Returned if the function or version does not exist, or if metric/log queries fail.
 //
 // Notes:
 //   - This analysis is based on CloudWatch Logs Insights. It detects errors based on
 //     presence of “[ERROR]” in logs tied to individual `requestId`s.
-//   - Function timeouts and throttles are not included as “errors” unless explicitly logged.
+//   - Function timeouts and throttles are not included as “errors”.
 //
 // Example:
 //
@@ -327,15 +362,15 @@ func (a *ServerlessStats) GetMaxMemoryUsageStatistics(
 func (a *ServerlessStats) GetErrorRate(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 	startTime, endTime time.Time,
 ) (*sdktypes.ErrorRateReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
@@ -348,37 +383,36 @@ func (a *ServerlessStats) GetErrorRate(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetErrorRate(ctx, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetErrorCategoryStatistics returns a categorized breakdown of errors for a given
-// AWS Lambda function and version (qualifier) within the specified time range.
+// AWS Lambda function and version within the specified time range.
 // Each error is grouped by its semantic type, extracted from log messages containing "[ERROR]".
 //
 // Input Parameters:
 //   - ctx: Context for timeout and cancellation handling.
 //   - functionName: The name of the AWS Lambda function to analyze.
-//   - qualifier: (Optional) Lambda version or alias. If empty, defaults to "$LATEST".
+//   - version: (Optional) Lambda version. If empty, defaults to "$LATEST".
 //   - startTime: Start of the time window to analyze (must precede endTime and be within log retention).
 //   - endTime: End of the time window to analyze (usually time.Now()).
 //
 // Returns:
 //   - *sdktypes.ErrorTypesReturn: Struct containing a slice of error categories and their occurrence counts.
-//   - error: Returned if the function or qualifier does not exist, or if log queries fail.
+//   - error: Returned if the function or version does not exist, or if log queries fail.
 //
 // Notes:
 //   - The grouping is based on log lines containing "[ERROR]", and the error type is extracted
 //     semantically (e.g., "[ERROR] ImportError: ..." → `ImportError`).
-//   - Timeouts are **not** classified as errors unless explicitly logged.
-//   - Useful for root cause analysis and observability dashboards.
+//   - Timeouts are **not** classified as errors.
 //
 // Example:
 //
@@ -392,15 +426,15 @@ func (a *ServerlessStats) GetErrorRate(
 func (a *ServerlessStats) GetErrorCategoryStatistics(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 	startTime, endTime time.Time,
 ) (*sdktypes.ErrorTypesReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
@@ -413,32 +447,32 @@ func (a *ServerlessStats) GetErrorCategoryStatistics(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetErrorTypes(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetDurationStatistics returns execution duration percentiles for a given AWS Lambda function
-// and version (qualifier) within the specified time range. The duration refers to the time spent
+// and version within the specified time range. The duration refers to the time spent
 // running the handler code (excluding init and billing overhead).
 //
 // Input Parameters:
 //   - ctx: Context for timeout and cancellation control.
 //   - functionName: The name of the AWS Lambda function to analyze.
-//   - qualifier: (Optional) Lambda version or alias. If empty, defaults to "$LATEST".
+//   - version: (Optional) Lambda version. If empty, defaults to "$LATEST".
 //   - startTime: Start of the time window for analysis (must precede endTime).
 //   - endTime: End of the time window for analysis (typically time.Now()).
 //
 // Returns:
 //   - *sdktypes.DurationStatisticsReturn: Struct containing execution duration statistics such as
 //     Min, Max, Median, Mean, P95, P99, and 95% Confidence Interval. Units are in milliseconds.
-//   - error: Returned if the function or qualifier does not exist, or if the underlying log/metric query fails.
+//   - error: Returned if the function or version does not exist, or if the underlying log/metric query fails.
 //
 // Notes:
 //   - Durations are extracted from CloudWatch Logs (`REPORT` lines).
@@ -457,15 +491,15 @@ func (a *ServerlessStats) GetErrorCategoryStatistics(
 func (a *ServerlessStats) GetDurationStatistics(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 	startTime, endTime time.Time,
 ) (*sdktypes.DurationStatisticsReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
@@ -478,19 +512,19 @@ func (a *ServerlessStats) GetDurationStatistics(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetDurationStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetWasteRatio returns the ratio of billed duration that was not used by the handler execution
-// for a given AWS Lambda function and version (qualifier) within the specified time range.
+// for a given AWS Lambda function and version within the specified time range.
 //
 // The waste ratio quantifies the inefficiency of function executions in terms of over-allocated
 // billing time (e.g., rounding up to the nearest 1 ms or 100 ms) compared to actual handler duration.
@@ -498,19 +532,18 @@ func (a *ServerlessStats) GetDurationStatistics(
 // Input Parameters:
 //   - ctx: Context for timeout and cancellation control.
 //   - functionName: The name of the AWS Lambda function to analyze.
-//   - qualifier: (Optional) Lambda version or alias. If empty, defaults to "$LATEST".
+//   - version: (Optional) Lambda version. If empty, defaults to "$LATEST".
 //   - startTime: Start of the time window for analysis.
 //   - endTime: End of the time window for analysis.
 //
 // Returns:
 //   - *sdktypes.WasteRatioReturn: Struct containing the average waste ratio (0.0–1.0),
 //     as well as optional breakdowns or supporting statistics.
-//   - error: Returned if the function or qualifier does not exist, or if metric/log retrieval fails.
+//   - error: Returned if the function or version does not exist, or if metric/log retrieval fails.
 //
 // Notes:
-//   - Waste ratio = (billed duration − actual duration) ÷ billed duration.
+//   - Waste ratio = (billed duration − actual duration) / billed duration.
 //   - A waste ratio of 0.00 means no overhead; 0.25 means 25% of billed time was unused.
-//   - Results may be `nil` if insufficient invocation data is available in the time range.
 //
 // Example:
 //
@@ -524,15 +557,15 @@ func (a *ServerlessStats) GetDurationStatistics(
 func (a *ServerlessStats) GetWasteRatio(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 	startTime, endTime time.Time,
 ) (*sdktypes.WasteRatioReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
@@ -545,19 +578,19 @@ func (a *ServerlessStats) GetWasteRatio(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetWasteRatio(ctx, a.cloudwatchFetcher, a.logsFetcher, a.invocationsCache, query)
 }
 
 // GetColdStartDurationStatistics returns statistics on cold start durations for a given
-// AWS Lambda function and version (qualifier) within the specified time range.
+// AWS Lambda function and version within the specified time range.
 //
 // Cold start duration measures the additional latency incurred when Lambda initializes
 // a new execution environment before invoking the function handler.
@@ -565,17 +598,13 @@ func (a *ServerlessStats) GetWasteRatio(
 // Input Parameters:
 //   - ctx: Context for cancellation and timeout.
 //   - functionName: Name of the Lambda function to analyze.
-//   - qualifier: (Optional) Lambda version or alias. Defaults to "$LATEST" if empty.
+//   - version: (Optional) Lambda version. Defaults to "$LATEST" if empty.
 //   - startTime: Start timestamp for the analysis window.
 //   - endTime: End timestamp for the analysis window.
 //
 // Returns:
 //   - *sdktypes.ColdStartDurationStatisticsReturn: Struct containing percentiles (e.g., P99) of cold start durations.
-//   - error: If the function or qualifier does not exist, or if metrics/log retrieval fails.
-//
-// Notes:
-//   - Cold start durations only include invocations where a new environment was initialized.
-//   - If no cold starts occurred in the time range, percentile values may be nil.
+//   - error: If the function or version does not exist, or if metrics/log retrieval fails.
 //
 // Example:
 //
@@ -589,15 +618,15 @@ func (a *ServerlessStats) GetWasteRatio(
 func (a *ServerlessStats) GetColdStartDurationStatistics(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 	startTime, endTime time.Time,
 ) (*sdktypes.ColdStartDurationStatisticsReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
@@ -610,19 +639,19 @@ func (a *ServerlessStats) GetColdStartDurationStatistics(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetColdStartDurationStatistics(ctx, a.logsFetcher, a.cloudwatchFetcher, a.invocationsCache, query)
 }
 
 // GetFunctionConfiguration returns the configuration details for a given
-// AWS Lambda function and version (qualifier).
+// AWS Lambda function and version.
 //
 // This includes metadata such as memory size, timeout, runtime, environment variables,
 // and other configuration parameters.
@@ -630,11 +659,11 @@ func (a *ServerlessStats) GetColdStartDurationStatistics(
 // Input Parameters:
 //   - ctx: Context for cancellation and timeout.
 //   - functionName: Name of the Lambda function to retrieve configuration for.
-//   - qualifier: (Optional) Lambda version or alias. Defaults to "$LATEST" if empty.
+//   - version: (Optional) Lambda version. Defaults to "$LATEST" if empty.
 //
 // Returns:
 //   - *sdktypes.BaseStatisticsReturn: Struct containing the function's configuration details.
-//   - error: If the function or qualifier does not exist or retrieval fails.
+//   - error: If the function or version does not exist or retrieval fails.
 //
 // Example:
 //
@@ -646,14 +675,14 @@ func (a *ServerlessStats) GetColdStartDurationStatistics(
 func (a *ServerlessStats) GetFunctionConfiguration(
 	ctx context.Context,
 	functionName string,
-	qualifier string,
+	version string,
 ) (*sdktypes.BaseStatisticsReturn, error) {
-	if qualifier == "" {
-		qualifier = "$LATEST"
+	if version == "" {
+		version = "$LATEST"
 	}
 	query := sdktypes.FunctionQuery{
 		FunctionName: functionName,
-		Qualifier:    qualifier,
+		Qualifier:    version,
 	}
 
 	exists, err := utils.FunctionExists(ctx, a.lambdaClient, functionName)
@@ -664,12 +693,12 @@ func (a *ServerlessStats) GetFunctionConfiguration(
 		return nil, fmt.Errorf("lambda function %q does not exist", functionName)
 	}
 
-	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, qualifier)
+	exists, err = utils.QualifierExists(ctx, a.lambdaClient, functionName, version)
 	if err != nil {
-		return nil, fmt.Errorf("checking if qualifier exists: %w", err)
+		return nil, fmt.Errorf("checking if version exists: %w", err)
 	}
 	if !exists {
-		return nil, fmt.Errorf("qualifier %q does not exist", qualifier)
+		return nil, fmt.Errorf("version %q does not exist", version)
 	}
 
 	return metrics.GetFunctionConfiguration(ctx, a.lambdaClient, query)
