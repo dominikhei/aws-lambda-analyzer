@@ -178,11 +178,3 @@ type PrometheusConfig struct {
 	Grouping map[string]string `json:"grouping"`
 	Enabled  bool              `json:"enabled"`
 }
-
-// Prometheusconfig is used to configure
-type PrometheusConfig struct {
-	URL      string
-	JobName  string
-	Grouping map[string]string
-	Enabled  bool
-}
