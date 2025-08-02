@@ -22,8 +22,6 @@ import (
 	"slices"
 	"sort"
 
-	"gonum.org/v1/gonum/stat"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -79,8 +77,52 @@ func ToLoadOptions(opts sdktypes.ConfigOptions) ([]func(*config.LoadOptions) err
 	return loadOptions, nil
 }
 
-// CalcSummaryStats calculates descriptive statistics (mean, median, percentiles, confidence interval, min, max)
-// from a slice of float64 values. Returns an error if the input slice is empty.
+// mean calculates the arithmetic mean of a slice of float64 values
+func mean(vals []float64) float64 {
+	if len(vals) == 0 {
+		return 0
+	}
+	sum := 0.0
+	for _, v := range vals {
+		sum += v
+	}
+	return sum / float64(len(vals))
+}
+
+// stdDev calculates the standard deviation of a slice of float64 values
+func stdDev(vals []float64) float64 {
+	if len(vals) <= 1 {
+		return 0
+	}
+
+	m := mean(vals)
+	sumSquares := 0.0
+	for _, v := range vals {
+		diff := v - m
+		sumSquares += diff * diff
+	}
+
+	// Population standard deviation (n) as we consider the whole population
+	// within the interval
+	return math.Sqrt(sumSquares / float64(len(vals)))
+}
+
+// quantile calculates the quantile (0.0 to 1.0) from a sorted slice
+func quantile(p float64, sorted []float64) float64 {
+	if len(sorted) == 0 {
+		return 0
+	}
+	index := int(math.Ceil(p*float64(len(sorted)))) - 1
+	if index < 0 {
+		index = 0
+	}
+	if index >= len(sorted) {
+		index = len(sorted) - 1
+	}
+	return sorted[index]
+}
+
+// CalcSummaryStats calculates descriptive statistics without external dependencies
 func CalcSummaryStats(vals []float64) (summaryStatistics, error) {
 	if len(vals) == 0 {
 		return summaryStatistics{}, errors.New("empty slice")
@@ -90,30 +132,32 @@ func CalcSummaryStats(vals []float64) (summaryStatistics, error) {
 	copy(sorted, vals)
 	sort.Float64s(sorted)
 
-	mean := stat.Mean(vals, nil)
-	median := stat.Quantile(0.5, stat.Empirical, sorted, nil)
-	stddev := stat.StdDev(vals, nil)
+	meanVal := mean(vals)
+	medianVal := quantile(0.5, sorted)
+	stddevVal := stdDev(vals)
 	min := slices.Min(vals)
 	max := slices.Max(vals)
 
 	var p95, p99, confInt95 *float64
 
 	if len(vals) >= 20 {
-		val := stat.Quantile(0.95, stat.Empirical, sorted, nil)
+		val := quantile(0.95, sorted)
 		p95 = &val
 	}
+
 	if len(vals) >= 100 {
-		val := stat.Quantile(0.99, stat.Empirical, sorted, nil)
+		val := quantile(0.99, sorted)
 		p99 = &val
 	}
+
 	if len(vals) >= 30 {
-		val := 1.96 * stddev / math.Sqrt(float64(len(vals)))
+		val := 1.96 * stddevVal / math.Sqrt(float64(len(vals)))
 		confInt95 = &val
 	}
 
 	return summaryStatistics{
-		Mean:      mean,
-		Median:    median,
+		Mean:      meanVal,
+		Median:    medianVal,
 		P95:       p95,
 		P99:       p99,
 		ConfInt95: confInt95,
