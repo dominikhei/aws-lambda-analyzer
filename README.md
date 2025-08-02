@@ -25,7 +25,7 @@ Serverless Statistics is a Go sdk that allows you to extract various statistics 
 The SDK uses the standard AWS credentials chain for authentication and will look for credentials in that order. The excemption from this is, if you specify `AccessKeyID` and `SecretAccessKey` in [ConfigOptions](./sdk/types/types.go#L42-L47) in the application code.
 ```go
 opts := types.ConfigOptions{
-	AccessKeyID:  "example-key-id",
+  AccessKeyID:  "example-key-id",
   SecretAccessKey: "example-secret-key",
   Region: "eu-central-1",
 }
@@ -33,7 +33,7 @@ stats := serverlessstatistics.New(ctx, opts)
 ```
 
 ### Region Configuration
-When creating your client, you can specify the AWS region and other options via [ConfigOptions](./sdk/types/types.go#L42-L47). The client will operate in either:
+When creating your client, you can specify the AWS region and other options via [ConfigOptions](./sdk/types/types.go#L42-L47). The client will look for functions in either:
 
 - The default region from your AWS credentials/profile
 - A specific region you specify in the configuration
@@ -64,6 +64,17 @@ There currently is no possibility to distinguish between different aliases in th
 Since the goal was to let the user decide freely what to do in this case, a [custom error](./errors/errors.go) is thrown. You can use `errors.As` in your downstream logic to asses whether this error is raised and decide yourself how you want to treat this case.
 Whether a function has been invoked in a specific interval is cached internally, to reduce calls to cloudwatch metrics and thus alos charges to your AWS account.
 
+## Input Parameters
+
+Most metric functions in `serverless-statistics` require the following input parameters:
+
+| Parameter     | Type              | Description |
+|---------------|-------------------|-------------|
+| `ctx`         | `context.Context` | Go context for timeout and cancellation. Pass `context.Background()` or derive from upstream logic. |
+| `functionName`| `string`          | The name of the AWS Lambda function to analyze. This must match the name used in the AWS Console. |
+| `qualifier`   | `string` (optional) | The version or alias of the Lambda function. Defaults to `"$LATEST"` if left empty. |
+| `startTime`   | `time.Time`       | Start of the time window for analysis. Should be within the function's log retention period. |
+| `endTime`     | `time.Time`       | End of the time window for analysis. Typically `time.Now()`. Must be after `startTime`. |
 
 ## Available Metrics
 
@@ -85,8 +96,10 @@ Whether a function has been invoked in a specific interval is cached internally,
 
 - **Source**: Logs Insights
 - **Formula**:
-  `sum(invocations with initDuration) / sum(all invocations)`
+  `count(invocations with initDuration) / count(all invocations)`
 - **Return Type**: `float64`
+- **Description**:
+  Measures the proportion of Lambda invocations that experienced a cold start, where the Lambda execution environment had to be initialized before handling the request.
 
 ---
 
@@ -104,16 +117,20 @@ Whether a function has been invoked in a specific interval is cached internally,
   - 95th Percentile Memory Usage Rate (requires ≥ 20 invocations)
   - 99th Percentile Memory Usage Rate (requires ≥ 100 invocations)
   - 95% Confidence Interval of Memory Usage Rate (requires ≥ 30 invocations)
+- **Description**:
+  Indicates how much of the allocated memory the Lambda function actually uses during execution.
 - **Notes**:
-  For each invoation, the peak memory is considered.
+  For each invocation, the peak memory is considered.
 ---
 
 ### Throttle Rate
 
 - **Source**: CloudWatch
 - **Formula**:
-  `Throttles / Invocations`
+    `count(invocations with throttling) / count(all invocations)`
 - **Return Type**: `float64`
+- **Description**:
+  Shows the fraction of Lambda invocations that were throttled due to exceeding concurrency limits.
 
 ---
 
@@ -121,8 +138,10 @@ Whether a function has been invoked in a specific interval is cached internally,
 
 - **Source**: CloudWatch
 - **Formula**:
-  `Timeouts / Invocations`
+  `count(invocations with timeout) / count(all invocations)`
 - **Return Type**: `float64`
+- **Description**:
+  Measures how often Lambda functions exceed their configured execution timeout.
 
 ---
 
@@ -130,8 +149,10 @@ Whether a function has been invoked in a specific interval is cached internally,
 
 - **Source**: Logs Insights
 - **Formula**:
-  `sum(invocations with error) / sum(all invocations)`
+  `count(invocations with error) / count(all invocations)`
 - **Return Type**: `float64`
+- **Description**:
+  Represents the proportion of Lambda invocations that resulted in errors, identified by presence of error logs.
 - **Notes**:
   Based on distinct `requestID`s where `[ERROR]` is present in logs.
 
@@ -142,7 +163,7 @@ Whether a function has been invoked in a specific interval is cached internally,
 - **Source**: Logs Insights
 - **Return Type**: `[]ErrorType`
 - **Description**:
-  Extracted from logs containing `[ERROR]`, grouped by semantic category (e.g. `[ERROR] ImportError`-> `ImportError`).
+  Categorizes errors seen in logs by their semantic type (e.g., `ImportError`, `TimeoutError`).
 - **Notes**:
   Function timeouts do not count as errors
 ---
@@ -158,6 +179,8 @@ Whether a function has been invoked in a specific interval is cached internally,
   - 95th Percentile Duration (requires ≥ 20 invocations)
   - 99th Percentile Duration (requires ≥ 100 invocations)
   - 95% Confidence Interval of Duration (requires ≥ 30 invocations)
+- **Description**:
+  Provides detailed timing metrics of Lambda execution duration.
 ---
 
 ### Waste Ratio
@@ -166,8 +189,8 @@ Whether a function has been invoked in a specific interval is cached internally,
 - **Formula**:
   `(billed duration - execution duration) / billed duration`
 - **Return Type**: `float64`
-- **Notes**:
-  Represents the fraction of time AWS billed for that was not actively used by the function. A high value may indicate over-provisioning, latency in initialization (cold starts), or inefficiencies in execution time.
+- **Description**:
+  Measures the fraction of billed time during which the function was not actively executing code (e.g., waiting or initialization overhead).
 ---
 
 ### Cold Start Duration Statistics
@@ -182,6 +205,8 @@ Whether a function has been invoked in a specific interval is cached internally,
   - 95th Percentile Duration (requires ≥ 20 invocations)
   - 99th Percentile Duration (requires ≥ 100 invocations)
   - 95% Confidence Interval of Duration (requires ≥ 30 invocations)
+- **Description**:
+  Provides statistics on the time spent initializing initializing the Lambda execution environment during cold starts.
 ---
 
 ### Function Configuration
@@ -196,6 +221,8 @@ Whether a function has been invoked in a specific interval is cached internally,
   - Runtime
   - Last Modification Date
   - Environment Variables
+- **Description**:
+  Retrieves the current configuration settings of a Lambda function.
 ---
 
 ## Examples
@@ -232,7 +259,7 @@ if err != nil {
 	return
 }
 if len(errorStats.Errors) == 0 {
-  fmt.Println("✅ No errors found in the last 24 hours")
+  fmt.Println("No errors found in the last 24 hours")
 } else {
   fmt.Printf("Error Analysis for function '%s' (%s)\n", errorStats.FunctionName, errorStats.Qualifier)
   fmt.Printf("Analysis period: %s to %s\n\n",

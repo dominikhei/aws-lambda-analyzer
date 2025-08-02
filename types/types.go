@@ -49,126 +49,134 @@ type AWSClients struct {
 
 // ThrottleRateReturn is the return of GetThrottleRate.
 type ThrottleRateReturn struct {
-	ThrottleRate float64
-	FunctionName string
-	Qualifier    string
-	StartTime    time.Time
-	EndTime      time.Time
+	ThrottleRate float64   `json:"throttleRate"`
+	FunctionName string    `json:"functionName"`
+	Qualifier    string    `json:"qualifier"`
+	StartTime    time.Time `json:"startTime"`
+	EndTime      time.Time `json:"endTime"`
 }
 
 // TimeoutRateReturn is the return of GetTimeoutRate.
 type TimeoutRateReturn struct {
-	TimeoutRate  float64
-	FunctionName string
-	Qualifier    string
-	StartTime    time.Time
-	EndTime      time.Time
+	TimeoutRate  float64   `json:"timeoutRate"`
+	FunctionName string    `json:"functionName"`
+	Qualifier    string    `json:"qualifier"`
+	StartTime    time.Time `json:"startTime"`
+	EndTime      time.Time `json:"endTime"`
 }
 
 // ColdStartRateReturn is the return of GetColdStartRate.
 type ColdStartRateReturn struct {
-	ColdStartRate float64   // Timedout Invocations / Total
-	FunctionName  string    // Name of the function
-	Qualifier     string    // Qualifier of the function
-	StartTime     time.Time // Start of the query interval (UTC)
-	EndTime       time.Time // End of the query interval (UTC)
+	ColdStartRate float64   `json:"coldStartRate"`
+	FunctionName  string    `json:"functionName"`
+	Qualifier     string    `json:"qualifier"`
+	StartTime     time.Time `json:"startTime"`
+	EndTime       time.Time `json:"endTime"`
 }
 
 // MemoryUsagePercentilesReturn holds various statistics on the maximum used memory of invocations.
 // P95UsageRate, P99UsageRate and Conf95UsageRate can be nil if not enough values are present in
 // the specified inteval, to calculate them robustly.
 type MemoryUsagePercentilesReturn struct {
-	MinUsageRate    float64  // Min (max) Memory usage of any run
-	MaxUsageRate    float64  // Max (max) Memory usage of any run
-	MedianUsageRate float64  // Median (max) Memory usage of any run
-	MeanUsageRate   float64  // Mean (max) Memory usage of any run
-	P95UsageRate    *float64 // 95th percentile
-	P99UsageRate    *float64 // 99th percentile
-	Conf95UsageRate *float64 // 95% confidence interval
-	FunctionName    string
-	Qualifier       string
-	StartTime       time.Time
-	EndTime         time.Time
+	MinUsageRate    float64   `json:"minUsageRate"`              // Min (max) Memory usage of any run
+	MaxUsageRate    float64   `json:"maxUsageRate"`              // Max (max) Memory usage of any run
+	MedianUsageRate float64   `json:"medianUsageRate"`           // Median (max) Memory usage of any run
+	MeanUsageRate   float64   `json:"meanUsageRate"`             // Mean (max) Memory usage of any run
+	P95UsageRate    *float64  `json:"p95UsageRate,omitempty"`    // 95th percentile
+	P99UsageRate    *float64  `json:"p99UsageRate,omitempty"`    // 99th percentile
+	Conf95UsageRate *float64  `json:"conf95UsageRate,omitempty"` // 95% confidence interval
+	FunctionName    string    `json:"functionName"`
+	Qualifier       string    `json:"qualifier"`
+	StartTime       time.Time `json:"startTime"`
+	EndTime         time.Time `json:"endTime"`
 }
 
 // BaseStatisticsReturn contains general statistics on a lambda function.
 type BaseStatisticsReturn struct {
-	FunctionARN          string
-	FunctionName         string
-	Qualifier            string
-	MemorySizeMB         *int32
-	TimeoutSeconds       *int32
-	Runtime              string
-	LastModified         string
-	EnvironmentVariables map[string]string
+	FunctionARN          string            `json:"functionArn"`
+	FunctionName         string            `json:"functionName"`
+	Qualifier            string            `json:"qualifier"`
+	MemorySizeMB         *int32            `json:"memorySizeMb,omitempty"`
+	TimeoutSeconds       *int32            `json:"timeoutSeconds,omitempty"`
+	Runtime              string            `json:"runtime"`
+	LastModified         string            `json:"lastModified"`
+	EnvironmentVariables map[string]string `json:"environmentVariables"`
 }
 
 // ErrorRateReturn is the return of GetErrorRate.
 type ErrorRateReturn struct {
-	FunctionName string
-	Qualifier    string
-	StartTime    time.Time
-	EndTime      time.Time
-	ErrorRate    float64
+	FunctionName string    `json:"functionName"`
+	Qualifier    string    `json:"qualifier"`
+	StartTime    time.Time `json:"startTime"`
+	EndTime      time.Time `json:"endTime"`
+	ErrorRate    float64   `json:"errorRate"`
 }
 
 // ErrorType represents a categorized error encountered by an AWS Lambda function.
 type ErrorType struct {
-	ErrorCategory string // ErrorCategory is a semantic extraction what follows after [ERROR] in a log.
-	ErrorCount    int
+	ErrorCategory string `json:"errorCategory"` // ErrorCategory is a semantic extraction what follows after [ERROR] in a log.
+	ErrorCount    int    `json:"errorCount"`
 }
 
 // ErrorTypesReturn is the return of GetErrorCategoryStatistics.
 // It contains a slice of ErrorType.
 type ErrorTypesReturn struct {
-	Errors       []ErrorType
-	FunctionName string
-	Qualifier    string
-	StartTime    time.Time
-	EndTime      time.Time
+	Errors       []ErrorType `json:"errors"`
+	FunctionName string      `json:"functionName"`
+	Qualifier    string      `json:"qualifier"`
+	StartTime    time.Time   `json:"startTime"`
+	EndTime      time.Time   `json:"endTime"`
 }
 
 // DurationStatisticsReturn holds various statistics on the duration of invocations.
 // P95Duration, P99Duration and Conf95Duration can be nil if not enough values are present in
 // the specified inteval, to calculate them robustly.
 type DurationStatisticsReturn struct {
-	MinDuration    float64  // Min duration of any run
-	MaxDuration    float64  // Max duration of any run
-	MedianDuration float64  // Median duration of any run
-	MeanDuration   float64  // Mean duration of any run
-	P95Duration    *float64 // 95th percentile duration
-	P99Duration    *float64 // 99th percentile duration
-	Conf95Duration *float64 // 95% confidence interval of the durations
-	FunctionName   string
-	Qualifier      string
-	StartTime      time.Time
-	EndTime        time.Time
+	MinDuration    float64   `json:"minDuration"`              // Min duration of any run
+	MaxDuration    float64   `json:"maxDuration"`              // Max duration of any run
+	MedianDuration float64   `json:"medianDuration"`           // Median duration of any run
+	MeanDuration   float64   `json:"meanDuration"`             // Mean duration of any run
+	P95Duration    *float64  `json:"p95Duration,omitempty"`    // 95th percentile duration
+	P99Duration    *float64  `json:"p99Duration,omitempty"`    // 99th percentile duration
+	Conf95Duration *float64  `json:"conf95Duration,omitempty"` // 95% confidence interval of the durations
+	FunctionName   string    `json:"functionName"`
+	Qualifier      string    `json:"qualifier"`
+	StartTime      time.Time `json:"startTime"`
+	EndTime        time.Time `json:"endTime"`
 }
 
 // ColdStartDurationStatisticsReturn holds various statistics on the coldstart duration of invocations.
 // P95ColdStartDuration, P99ColdStartDuration and Conf95ColdStartDuration can be nil
 // if not enough values are present in the specified inteval, to calculate them robustly.
 type ColdStartDurationStatisticsReturn struct {
-	MinColdStartDuration    float64  // Min coldstart duration of any run
-	MaxColdStartDuration    float64  // Max coldstart duration of any run
-	MedianColdStartDuration float64  // Median coldstart duration of any run
-	MeanColdStartDuration   float64  // Mean coldstart duration of any run
-	P95ColdStartDuration    *float64 // 95th percentile coldstart duration
-	P99ColdStartDuration    *float64 // 99th percentile coldstart duration
-	Conf95ColdStartDuration *float64 // 95% confidence interval of the coldstart durations
-	FunctionName            string
-	Qualifier               string
-	StartTime               time.Time
-	EndTime                 time.Time
+	MinColdStartDuration    float64   `json:"minColdStartDuration"`              // Min coldstart duration of any run
+	MaxColdStartDuration    float64   `json:"maxColdStartDuration"`              // Max coldstart duration of any run
+	MedianColdStartDuration float64   `json:"medianColdStartDuration"`           // Median coldstart duration of any run
+	MeanColdStartDuration   float64   `json:"meanColdStartDuration"`             // Mean coldstart duration of any run
+	P95ColdStartDuration    *float64  `json:"p95ColdStartDuration,omitempty"`    // 95th percentile coldstart duration
+	P99ColdStartDuration    *float64  `json:"p99ColdStartDuration,omitempty"`    // 99th percentile coldstart duration
+	Conf95ColdStartDuration *float64  `json:"conf95ColdStartDuration,omitempty"` // 95% confidence interval of the coldstart durations
+	FunctionName            string    `json:"functionName"`
+	Qualifier               string    `json:"qualifier"`
+	StartTime               time.Time `json:"startTime"`
+	EndTime                 time.Time `json:"endTime"`
 }
 
 // WasteRatioReturn is the return of GetWasteRatio.
 type WasteRatioReturn struct {
-	WasteRatio   float64
-	FunctionName string
-	Qualifier    string
-	StartTime    time.Time
-	EndTime      time.Time
+	WasteRatio   float64   `json:"wasteRatio"`
+	FunctionName string    `json:"functionName"`
+	Qualifier    string    `json:"qualifier"`
+	StartTime    time.Time `json:"startTime"`
+	EndTime      time.Time `json:"endTime"`
+}
+
+// Prometheusconfig is used to configure
+type PrometheusConfig struct {
+	URL      string            `json:"url"`
+	JobName  string            `json:"jobName"`
+	Grouping map[string]string `json:"grouping"`
+	Enabled  bool              `json:"enabled"`
 }
 
 // Prometheusconfig is used to configure
