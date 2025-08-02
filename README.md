@@ -18,6 +18,15 @@ Serverless Statistics is a Go sdk that allows you to extract various statistics 
   </a>
 </p>
 
+## Table of Contents
+
+- [Key Configurations](#key-configurations)
+- [Input Parameters](#input-parameters)
+- [Available Metrics](#available-metrics)
+- [Detailed Metric Explanations](#detailed-metric-explanations)
+- [Required Permissions & CloudWatch Logging](#required-permissions--cloudwatch-logging)
+- [Examples](#examples)
+- [Contributing](#contributing)
 
 ## Key Configurations
 
@@ -48,8 +57,8 @@ stats := serverlessstatistics.New(ctx, opts)
 ### Function Targeting
 You specify which Lambda function to analyze by providing:
 
-- __Function Name__ - The name of your Lambda function
-- __Version__ (optional) - A specific version. Defaults to `$LATEST`.
+- __Function Name__: The name of your Lambda function
+- __Version__ (optional): A specific version. Defaults to `$LATEST`.
 
 If no version is provided, the SDK will analyze the logs and metrics for the `$LATEST` version.
 
@@ -224,6 +233,37 @@ Most metric functions in `serverless-statistics` require the following input par
 - **Description**:
   Retrieves the current configuration settings of a Lambda function.
 ---
+
+## Required Permissions & CloudWatch Logging
+
+To successfully retrieve and analyze Lambda metrics and logs, the SDK requires your AWS credentials to have specific IAM permissions, and the target Lambda functions must have CloudWatch logging enabled.
+
+### Required IAM Permissions
+
+The following minimum IAM permissions are required to use the SDK:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:StartQuery",
+        "logs:GetQueryResults",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:FilterLogEvents",
+        "cloudwatch:GetMetricData",
+        "cloudwatch:GetMetricStatistics",
+        "lambda:GetFunctionConfiguration",
+        "lambda:ListFunctions"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
 
 ## Examples
 
